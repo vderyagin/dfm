@@ -1,4 +1,4 @@
-package dfm_test
+package main
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -9,5 +9,5 @@ import (
 
 func TestDfm(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Dfm Suite")
+	RunSpecs(t, "DFM Suite")
 }

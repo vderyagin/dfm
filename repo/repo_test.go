@@ -70,5 +70,4 @@ var _ = Describe("Repo", func() {
 		Expect(dotfiles).To(HaveLen(1))
 		Expect(dotfiles[0].StoredLocation).To(Equal(dfPath))
 	})
-
 })
