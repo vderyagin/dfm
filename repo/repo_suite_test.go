@@ -1,4 +1,4 @@
-package fsutil_test
+package repo_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestFsutil(t *testing.T) {
+func TestRepo(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "FSutil Suite")
+	RunSpecs(t, "Repo Suite")
 }
