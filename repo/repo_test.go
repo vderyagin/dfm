@@ -2,72 +2,66 @@ package repo_test
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
 	. "github.com/vderyagin/dfm/repo"
+	. "github.com/vderyagin/dfm/testutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Repo", func() {
-	var tempDir, startingDir string
-	var err error
+	Describe("New", func() {
+		It("Creates Repo object with absolute paths", func() {
+			relStore := "store"
+			relHome := "home"
+			absStore, _ := filepath.Abs(relStore)
+			absHome, _ := filepath.Abs(relHome)
 
-	if startingDir, err = os.Getwd(); err != nil {
-		log.Fatalln("Failed to get current directory.")
-	}
+			repo := New(relStore, relHome)
 
-	BeforeEach(func() {
-		var err error
-
-		if tempDir, err = ioutil.TempDir(os.TempDir(), "dotfiletest"); err != nil {
-			log.Fatalln("Failed to create temporary directory.")
-		}
-
-		if err := os.Chdir(tempDir); err != nil {
-			log.Fatalf("Failed to cd into %s\n", tempDir)
-		}
+			Expect(repo.Store).To(Equal(absStore))
+			Expect(repo.Home).To(Equal(absHome))
+		})
 	})
 
-	AfterEach(func() {
-		os.Chdir(startingDir)
-		os.RemoveAll(tempDir)
-	})
+	Describe("StoredDotFiles", func() {
+		ExecuteEachInTempDir()
 
-	It("Returns empty collection for empty storage", func() {
-		os.Mkdir("empty", 0777)
-		absPath, _ := filepath.Abs("empty")
+		It("Returns empty collection for empty storage", func() {
+			os.Mkdir("empty", 0777)
+			absPath, _ := filepath.Abs("empty")
 
-		repo := Repo{Store: absPath}
+			repo := New(absPath, ".")
 
-		Expect(repo.StoredDotFiles()).To(BeEmpty())
-	})
+			Expect(repo.StoredDotFiles()).To(BeEmpty())
+		})
 
-	It("Returns collection including dotfile objects", func() {
-		ioutil.WriteFile("bashrc", []byte{}, 0777)
-		dfPath, _ := filepath.Abs("bashrc")
-		repoPath, _ := filepath.Abs(".")
+		It("Returns collection including dotfile objects", func() {
+			ioutil.WriteFile("bashrc", []byte{}, 0777)
+			dfPath, _ := filepath.Abs("bashrc")
+			repoPath, _ := filepath.Abs(".")
 
-		repo := Repo{Store: repoPath}
-		dotfiles := repo.StoredDotFiles()
+			repo := New(repoPath, ".")
+			dotfiles := repo.StoredDotFiles()
 
-		Expect(dotfiles).To(HaveLen(1))
-		Expect(dotfiles[0].StoredLocation).To(Equal(dfPath))
-	})
+			Expect(dotfiles).To(HaveLen(1))
+			Expect(dotfiles[0].StoredLocation).To(Equal(dfPath))
+		})
 
-	It("Returns collection including dotfile objects from nested directories", func() {
-		os.MkdirAll("foo/bar/baz", 0777)
-		ioutil.WriteFile("foo/bar/baz/bashrc", []byte{}, 0777)
-		dfPath, _ := filepath.Abs("foo/bar/baz/bashrc")
-		repoPath, _ := filepath.Abs(".")
+		It("Returns collection including dotfile objects from nested directories", func() {
+			os.MkdirAll("foo/bar/baz", 0777)
+			ioutil.WriteFile("foo/bar/baz/bashrc", []byte{}, 0777)
+			dfPath, _ := filepath.Abs("foo/bar/baz/bashrc")
+			repoPath, _ := filepath.Abs(".")
 
-		repo := Repo{Store: repoPath}
-		dotfiles := repo.StoredDotFiles()
+			repo := New(repoPath, ".")
+			dotfiles := repo.StoredDotFiles()
 
-		Expect(dotfiles).To(HaveLen(1))
-		Expect(dotfiles[0].StoredLocation).To(Equal(dfPath))
+			Expect(dotfiles).To(HaveLen(1))
+			Expect(dotfiles[0].StoredLocation).To(Equal(dfPath))
+		})
 	})
 })

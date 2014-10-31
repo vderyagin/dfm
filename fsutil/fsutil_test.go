@@ -2,42 +2,19 @@ package fsutil_test
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
 	. "github.com/vderyagin/dfm/fsutil"
+	. "github.com/vderyagin/dfm/testutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("fsutil", func() {
-	var tempDir, startingDir string
-	var err error
-
-	if startingDir, err = os.Getwd(); err != nil {
-		log.Fatalln("Failed to get current directory.")
-	}
-
-	BeforeEach(func() {
-		var err error
-
-		if tempDir, err = ioutil.TempDir(os.TempDir(), "dotfiletest"); err != nil {
-			log.Fatalln("Failed to create temporary directory.")
-		}
-
-		if err := os.Chdir(tempDir); err != nil {
-			log.Fatalf("Failed to cd into %s\n", tempDir)
-		}
-	})
-
-	AfterEach(func() {
-		os.Chdir(startingDir)
-		os.RemoveAll(tempDir)
-	})
-
 	Describe("FilesIn", func() {
+		ExecuteEachInTempDir()
 		It("Returns empty collection if argument does not exist", func() {
 			Expect(FilesIn("nonexistent_dir")).To(BeEmpty())
 		})
