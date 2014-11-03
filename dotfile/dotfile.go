@@ -59,3 +59,23 @@ func (df *DotFile) IsStored() bool {
 
 	return os.SameFile(origLinkTargetInfo, storedInfo)
 }
+
+// IsReadyToBeStored returns true if dotfile is ready to be stored, that is if
+// it is a regular file not conflicting with any of already stored files.
+func (df *DotFile) IsReadyToBeStored() bool {
+	origInfo, err := os.Lstat(df.OriginalLocation)
+
+	if err != nil {
+		return false
+	}
+
+	if !origInfo.Mode().IsRegular() {
+		return false
+	}
+
+	if _, err := os.Lstat(df.StoredLocation); !os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
