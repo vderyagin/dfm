@@ -38,9 +38,25 @@ func (r *Repo) StoredDotFiles() []*dotfile.DotFile {
 	var dotfiles []*dotfile.DotFile
 
 	for _, file := range fsutil.FilesIn(r.Store) {
-		df := dotfile.DotFile{StoredLocation: file}
+		df := dotfile.DotFile{
+			StoredLocation:   file,
+			OriginalLocation: r.OriginalFilePath(file),
+		}
+
 		dotfiles = append(dotfiles, &df)
 	}
 
 	return dotfiles
+}
+
+// OriginalFilePath computes original path of dotfile (where it should be
+// symlinked) based on path where it is stored.
+func (r *Repo) OriginalFilePath(stored string) string {
+	relPath, err := filepath.Rel(r.Store, stored)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return filepath.Join(r.Home, "."+relPath)
 }

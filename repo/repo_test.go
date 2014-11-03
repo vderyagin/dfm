@@ -41,27 +41,49 @@ var _ = Describe("Repo", func() {
 
 		It("Returns collection including dotfile objects", func() {
 			ioutil.WriteFile("bashrc", []byte{}, 0777)
-			dfPath, _ := filepath.Abs("bashrc")
+			storedPath, _ := filepath.Abs("bashrc")
 			repoPath, _ := filepath.Abs(".")
 
 			repo := New(repoPath, ".")
 			dotfiles := repo.StoredDotFiles()
 
 			Expect(dotfiles).To(HaveLen(1))
-			Expect(dotfiles[0].StoredLocation).To(Equal(dfPath))
+			Expect(dotfiles[0].StoredLocation).To(Equal(storedPath))
 		})
 
 		It("Returns collection including dotfile objects from nested directories", func() {
 			os.MkdirAll("foo/bar/baz", 0777)
 			ioutil.WriteFile("foo/bar/baz/bashrc", []byte{}, 0777)
-			dfPath, _ := filepath.Abs("foo/bar/baz/bashrc")
+			storedPath, _ := filepath.Abs("foo/bar/baz/bashrc")
 			repoPath, _ := filepath.Abs(".")
 
 			repo := New(repoPath, ".")
 			dotfiles := repo.StoredDotFiles()
 
 			Expect(dotfiles).To(HaveLen(1))
-			Expect(dotfiles[0].StoredLocation).To(Equal(dfPath))
+			Expect(dotfiles[0].StoredLocation).To(Equal(storedPath))
+		})
+
+		It("Returns multiple files, if there multiple stored", func() {
+			repo := New(".", ".")
+			ioutil.WriteFile("foo", []byte{}, 0777)
+			ioutil.WriteFile("bar", []byte{}, 0777)
+
+			Expect(repo.StoredDotFiles()).To(HaveLen(2))
+		})
+	})
+
+	Describe("OriginalFilePath", func() {
+		repo := New("/store", "/")
+
+		It("Returns proper file name for simple case", func() {
+			orig := repo.OriginalFilePath(filepath.Join(repo.Store, "bashrc"))
+			Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
+		})
+
+		It("Returns proper file name for for deeply nested file", func() {
+			orig := repo.OriginalFilePath(filepath.Join(repo.Store, "config/camlistore/server-config.json"))
+			Expect(orig).To(Equal(filepath.Join(repo.Home, ".config/camlistore/server-config.json")))
 		})
 	})
 })
