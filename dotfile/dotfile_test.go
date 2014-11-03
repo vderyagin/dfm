@@ -37,20 +37,20 @@ var _ = Describe("Dotfile", func() {
 	Describe("IsStored", func() {
 		ExecuteEachInTempDir()
 
-		It("Returns true if file is properly stored", func() {
+		It("returns true if file is properly stored", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
 			os.Symlink(stored(), orig())
 
 			Expect(df().IsStored()).To(BeTrue())
 		})
 
-		It("Returns false if original file location is empty", func() {
+		It("returns false if original file location is empty", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
 
 			Expect(df().IsStored()).To(BeFalse())
 		})
 
-		It("Returns false if stored file location is empty", func() {
+		It("returns false if stored file location is empty", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
 			os.Symlink(stored(), orig())
 			os.Remove(stored())
@@ -58,21 +58,21 @@ var _ = Describe("Dotfile", func() {
 			Expect(df().IsStored()).To(BeFalse())
 		})
 
-		It("Returns false if original file is not a symlink", func() {
+		It("returns false if original file is not a symlink", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
 			ioutil.WriteFile(orig(), []byte{}, 0777)
 
 			Expect(df().IsStored()).To(BeFalse())
 		})
 
-		It("Returns false if stored file is not a regular file", func() {
+		It("returns false if stored file is not a regular file", func() {
 			os.MkdirAll(stored(), 0777)
 			os.Symlink(stored(), orig())
 
 			Expect(df().IsStored()).To(BeFalse())
 		})
 
-		It("Returns false both files are not linked properly", func() {
+		It("returns false both files are not linked properly", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
 			os.Symlink("/wrong/location", orig())
 
@@ -83,7 +83,7 @@ var _ = Describe("Dotfile", func() {
 	Describe("IsReadyToBeStored", func() {
 		ExecuteEachInTempDir()
 
-		It("Returns true if regular file not conflicting with stored ones", func() {
+		It("returns true if regular file not conflicting with stored ones", func() {
 			ioutil.WriteFile(orig(), []byte{}, 0777)
 
 			Expect(df().IsReadyToBeStored()).To(BeTrue())

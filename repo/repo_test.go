@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("Repo", func() {
 	Describe("New", func() {
-		It("Creates Repo object with absolute paths", func() {
+		It("creates Repo object with absolute paths", func() {
 			relStore := "store"
 			relHome := "home"
 			absStore, _ := filepath.Abs(relStore)
@@ -30,7 +30,7 @@ var _ = Describe("Repo", func() {
 	Describe("StoredDotFiles", func() {
 		ExecuteEachInTempDir()
 
-		It("Returns empty collection for empty storage", func() {
+		It("returns empty collection for empty storage", func() {
 			os.Mkdir("empty", 0777)
 			absPath, _ := filepath.Abs("empty")
 
@@ -39,7 +39,7 @@ var _ = Describe("Repo", func() {
 			Expect(repo.StoredDotFiles()).To(BeEmpty())
 		})
 
-		It("Returns collection including dotfile objects", func() {
+		It("returns collection including dotfile objects", func() {
 			ioutil.WriteFile("bashrc", []byte{}, 0777)
 			storedPath, _ := filepath.Abs("bashrc")
 			repoPath, _ := filepath.Abs(".")
@@ -51,7 +51,7 @@ var _ = Describe("Repo", func() {
 			Expect(dotfiles[0].StoredLocation).To(Equal(storedPath))
 		})
 
-		It("Returns collection including dotfile objects from nested directories", func() {
+		It("returns collection including dotfile objects from nested directories", func() {
 			os.MkdirAll("foo/bar/baz", 0777)
 			ioutil.WriteFile("foo/bar/baz/bashrc", []byte{}, 0777)
 			storedPath, _ := filepath.Abs("foo/bar/baz/bashrc")
@@ -64,7 +64,7 @@ var _ = Describe("Repo", func() {
 			Expect(dotfiles[0].StoredLocation).To(Equal(storedPath))
 		})
 
-		It("Returns multiple files, if there multiple stored", func() {
+		It("returns multiple files, if there multiple stored", func() {
 			repo := New(".", ".")
 			ioutil.WriteFile("foo", []byte{}, 0777)
 			ioutil.WriteFile("bar", []byte{}, 0777)
@@ -76,12 +76,12 @@ var _ = Describe("Repo", func() {
 	Describe("OriginalFilePath", func() {
 		repo := New("/store", "/")
 
-		It("Returns proper file name for simple case", func() {
+		It("returns proper file name for simple case", func() {
 			orig := repo.OriginalFilePath(filepath.Join(repo.Store, "bashrc"))
 			Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
 		})
 
-		It("Returns proper file name for for deeply nested file", func() {
+		It("returns proper file name for for deeply nested file", func() {
 			orig := repo.OriginalFilePath(filepath.Join(repo.Store, "config/camlistore/server-config.json"))
 			Expect(orig).To(Equal(filepath.Join(repo.Home, ".config/camlistore/server-config.json")))
 		})
