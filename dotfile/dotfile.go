@@ -31,13 +31,8 @@ func New(stored, original string) *DotFile {
 
 // IsStored returns true if given dotfile is stored.
 func (df *DotFile) IsStored() bool {
-	if storedInfo, err := os.Lstat(df.StoredLocation); err != nil {
-		return false
-	} else if !storedInfo.Mode().IsRegular() {
-		return false
-	}
-
-	return true
+	storedInfo, err := os.Lstat(df.StoredLocation)
+	return err == nil && storedInfo.Mode().IsRegular()
 }
 
 // IsLinked returns true if file is stored and linked to it's original
