@@ -9,5 +9,5 @@ import (
 
 func TestDotfile(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Dotfile Suite")
+	RunSpecs(t, "DotFile Suite")
 }
