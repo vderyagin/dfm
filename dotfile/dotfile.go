@@ -1,6 +1,7 @@
 package dotfile
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -78,4 +79,25 @@ func (df *DotFile) IsReadyToBeStored() bool {
 	}
 
 	return true
+}
+
+// Store puts file in storage and links it back from there.
+func (df *DotFile) Store() error {
+	if !df.IsReadyToBeStored() {
+		return errors.New("can not store")
+	}
+
+	if err := os.MkdirAll(filepath.Dir(df.StoredLocation), 0777); err != nil {
+		return err
+	}
+
+	if err := os.Rename(df.OriginalLocation, df.StoredLocation); err != nil {
+		return err
+	}
+
+	if err := os.Symlink(df.StoredLocation, df.OriginalLocation); err != nil {
+		return err
+	}
+
+	return nil
 }

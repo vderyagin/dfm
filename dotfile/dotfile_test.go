@@ -106,4 +106,33 @@ var _ = Describe("Dotfile", func() {
 			Expect(df().IsReadyToBeStored()).To(BeFalse())
 		})
 	})
+
+	Describe("Store", func() {
+		ExecuteEachInTempDir()
+
+		It("stores file", func() {
+			ioutil.WriteFile(orig(), []byte{}, 0777)
+
+			Expect(df().IsStored()).To(BeFalse())
+			Expect(df().Store()).To(BeNil())
+			Expect(df().IsStored()).To(BeTrue())
+		})
+
+		It("creates intermediate directories for nested file", func() {
+			stored, _ := filepath.Abs("config/camlistore/server-config.json")
+			orig, _ := filepath.Abs(".config/camlistore/server-config.json")
+			df := New(stored, orig)
+			os.MkdirAll(filepath.Dir(orig), 0777)
+			ioutil.WriteFile(orig, []byte{}, 0777)
+
+			Expect(df.IsStored()).To(BeFalse())
+			Expect(df.Store()).To(BeNil())
+			Expect(df.IsStored()).To(BeTrue())
+		})
+
+		It("fails if file is not ready to be stored", func() {
+			Expect(df().Store()).NotTo(BeNil())
+			Expect(df().IsStored()).To(BeFalse())
+		})
+	})
 })
