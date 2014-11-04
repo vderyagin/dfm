@@ -128,3 +128,20 @@ func (df *DotFile) Link() error {
 
 	return nil
 }
+
+// Restore moves stored file back into its original location, replacing symlink.
+func (df *DotFile) Restore() error {
+	if !df.IsLinked() {
+		return errors.New("is not linked")
+	}
+
+	if err := os.Remove(df.OriginalLocation); err != nil {
+		return err
+	}
+
+	if err := os.Rename(df.StoredLocation, df.OriginalLocation); err != nil {
+		return err
+	}
+
+	return nil
+}

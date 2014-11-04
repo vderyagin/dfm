@@ -185,4 +185,39 @@ var _ = Describe("Dotfile", func() {
 			Expect(df().Link()).NotTo(BeNil())
 		})
 	})
+
+	Describe("Restore", func() {
+		It("restores the file in its original place", func() {
+			ioutil.WriteFile(stored(), []byte{}, 0777)
+			df().Link()
+
+			Expect(df().IsLinked()).To(BeTrue())
+			Expect(df().Restore()).To(BeNil())
+			Expect(df().IsLinked()).To(BeFalse())
+			Expect(df().IsReadyToBeStored()).To(BeTrue())
+		})
+
+		It("deletes any empty intermediate directories in store", func() {
+			stored, _ := filepath.Abs("config/camlistore/server-config.json")
+			orig, _ := filepath.Abs(".config/camlistore/server-config.json")
+			df := New(stored, orig)
+			os.MkdirAll(filepath.Dir(stored), 0777)
+			ioutil.WriteFile(stored, []byte{}, 0777)
+			df.Link()
+
+			Expect(df.IsLinked()).To(BeTrue())
+			Expect(df.Restore()).To(BeNil())
+
+			_, err := os.Stat("config")
+			Expect(os.IsNotExist(err)).To(BeTrue())
+
+			Expect(df.IsLinked()).To(BeFalse())
+			Expect(df.IsReadyToBeStored()).To(BeTrue())
+		})
+
+		It("fails if file is not stored and linked properly", func() {
+			ioutil.WriteFile(stored(), []byte{}, 0777)
+			Expect(df().Restore()).NotTo(BeNil())
+		})
+	})
 })
