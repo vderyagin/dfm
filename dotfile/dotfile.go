@@ -29,8 +29,7 @@ func New(stored, original string) *DotFile {
 	}
 }
 
-// IsStored returns true if given dotfile is properly stored and linked back
-// to home dir, false otherwise.
+// IsStored returns true if given dotfile is stored.
 func (df *DotFile) IsStored() bool {
 	if storedInfo, err := os.Lstat(df.StoredLocation); err != nil {
 		return false
@@ -100,6 +99,31 @@ func (df *DotFile) Store() error {
 	}
 
 	if err := os.Rename(df.OriginalLocation, df.StoredLocation); err != nil {
+		return err
+	}
+
+	if err := os.Symlink(df.StoredLocation, df.OriginalLocation); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Link links stored dotfile to its original location.
+func (df *DotFile) Link() error {
+	if !df.IsStored() {
+		return errors.New("file is not even stored")
+	}
+
+	if df.IsLinked() {
+		return errors.New("file is linked already")
+	}
+
+	if _, err := os.Lstat(df.OriginalLocation); !os.IsNotExist(err) {
+		return errors.New("conflicting file at original location")
+	}
+
+	if err := os.MkdirAll(filepath.Dir(df.OriginalLocation), 0777); err != nil {
 		return err
 	}
 

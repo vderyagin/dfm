@@ -14,6 +14,8 @@ import (
 )
 
 var _ = Describe("Dotfile", func() {
+	ExecuteEachInTempDir()
+
 	stored := func() string {
 		s, err := filepath.Abs("foo")
 		if err != nil {
@@ -35,8 +37,6 @@ var _ = Describe("Dotfile", func() {
 	}
 
 	Describe("IsStored", func() {
-		ExecuteEachInTempDir()
-
 		It("returns true if file is properly stored", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
 
@@ -60,8 +60,6 @@ var _ = Describe("Dotfile", func() {
 	})
 
 	Describe("IsLinked", func() {
-		ExecuteEachInTempDir()
-
 		It("returns true if file is stored and linked properly", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
 			os.Symlink(stored(), orig())
@@ -96,8 +94,6 @@ var _ = Describe("Dotfile", func() {
 	})
 
 	Describe("IsReadyToBeStored", func() {
-		ExecuteEachInTempDir()
-
 		It("returns true if regular file not conflicting with stored ones", func() {
 			ioutil.WriteFile(orig(), []byte{}, 0777)
 
@@ -123,7 +119,6 @@ var _ = Describe("Dotfile", func() {
 	})
 
 	Describe("Store", func() {
-		ExecuteEachInTempDir()
 
 		It("stores file", func() {
 			ioutil.WriteFile(orig(), []byte{}, 0777)
@@ -148,6 +143,46 @@ var _ = Describe("Dotfile", func() {
 		It("fails if file is not ready to be stored", func() {
 			Expect(df().Store()).NotTo(BeNil())
 			Expect(df().IsStored()).To(BeFalse())
+		})
+	})
+
+	Describe("Link", func() {
+		It("symlinks stored file to it's original location", func() {
+			ioutil.WriteFile(stored(), []byte{}, 0777)
+
+			Expect(df().IsLinked()).To(BeFalse())
+			Expect(df().Link()).To(BeNil())
+			Expect(df().IsLinked()).To(BeTrue())
+		})
+
+		It("creates deeply nested directories if necessary", func() {
+			stored, _ := filepath.Abs("config/camlistore/server-config.json")
+			orig, _ := filepath.Abs(".config/camlistore/server-config.json")
+			df := New(stored, orig)
+			os.MkdirAll(filepath.Dir(stored), 0777)
+			ioutil.WriteFile(stored, []byte{}, 0777)
+
+			Expect(df.IsLinked()).To(BeFalse())
+			Expect(df.Link()).To(BeNil())
+			Expect(df.IsLinked()).To(BeTrue())
+		})
+
+		It("fails if file is not stored", func() {
+			Expect(df().Link()).NotTo(BeNil())
+		})
+
+		It("fails if file is already linked", func() {
+			ioutil.WriteFile(stored(), []byte{}, 0777)
+			os.Symlink(stored(), orig())
+
+			Expect(df().Link()).NotTo(BeNil())
+		})
+
+		It("fails if there's conficting file at original location", func() {
+			ioutil.WriteFile(stored(), []byte{}, 0777)
+			ioutil.WriteFile(orig(), []byte{}, 0777)
+
+			Expect(df().Link()).NotTo(BeNil())
 		})
 	})
 })
