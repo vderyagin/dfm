@@ -39,15 +39,8 @@ var _ = Describe("Dotfile", func() {
 
 		It("returns true if file is properly stored", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
-			os.Symlink(stored(), orig())
 
 			Expect(df().IsStored()).To(BeTrue())
-		})
-
-		It("returns false if original file location is empty", func() {
-			ioutil.WriteFile(stored(), []byte{}, 0777)
-
-			Expect(df().IsStored()).To(BeFalse())
 		})
 
 		It("returns false if stored file location is empty", func() {
@@ -58,25 +51,47 @@ var _ = Describe("Dotfile", func() {
 			Expect(df().IsStored()).To(BeFalse())
 		})
 
-		It("returns false if original file is not a symlink", func() {
-			ioutil.WriteFile(stored(), []byte{}, 0777)
-			ioutil.WriteFile(orig(), []byte{}, 0777)
-
-			Expect(df().IsStored()).To(BeFalse())
-		})
-
 		It("returns false if stored file is not a regular file", func() {
 			os.MkdirAll(stored(), 0777)
 			os.Symlink(stored(), orig())
 
 			Expect(df().IsStored()).To(BeFalse())
 		})
+	})
 
-		It("returns false both files are not linked properly", func() {
+	Describe("IsLinked", func() {
+		ExecuteEachInTempDir()
+
+		It("returns true if file is stored and linked properly", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
-			os.Symlink("/wrong/location", orig())
+			os.Symlink(stored(), orig())
 
-			Expect(df().IsStored()).To(BeFalse())
+			Expect(df().IsLinked()).To(BeTrue())
+		})
+
+		It("returns false if file is not stored properly", func() {
+			Expect(df().IsLinked()).To(BeFalse())
+		})
+
+		It("returns false if there's nothing at original location", func() {
+			ioutil.WriteFile(stored(), []byte{}, 0777)
+
+			Expect(df().IsLinked()).To(BeFalse())
+		})
+
+		It("returns false if there's no symlink at original location", func() {
+			ioutil.WriteFile(stored(), []byte{}, 0777)
+			os.MkdirAll(orig(), 0777)
+
+			Expect(df().IsLinked()).To(BeFalse())
+		})
+
+		It("returns false if there's wrong symlink at original location", func() {
+			ioutil.WriteFile(stored(), []byte{}, 0777)
+			ioutil.WriteFile("wrong_file", []byte{}, 0777)
+			os.Symlink("wrong_file", orig())
+
+			Expect(df().IsLinked()).To(BeFalse())
 		})
 	})
 

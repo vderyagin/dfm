@@ -32,6 +32,22 @@ func New(stored, original string) *DotFile {
 // IsStored returns true if given dotfile is properly stored and linked back
 // to home dir, false otherwise.
 func (df *DotFile) IsStored() bool {
+	if storedInfo, err := os.Lstat(df.StoredLocation); err != nil {
+		return false
+	} else if !storedInfo.Mode().IsRegular() {
+		return false
+	}
+
+	return true
+}
+
+// IsLinked returns true if file is stored and linked to it's original
+// location, false otherwise.
+func (df *DotFile) IsLinked() bool {
+	if !df.IsStored() {
+		return false
+	}
+
 	origInfo, err := os.Lstat(df.OriginalLocation)
 
 	if err != nil {
@@ -44,19 +60,11 @@ func (df *DotFile) IsStored() bool {
 		return false
 	}
 
-	storedInfo, err := os.Lstat(df.StoredLocation)
-
-	if err != nil {
-		return false
-	}
-
 	if origInfo.Mode()&os.ModeSymlink != os.ModeSymlink {
 		return false
 	}
 
-	if !storedInfo.Mode().IsRegular() {
-		return false
-	}
+	storedInfo, _ := os.Lstat(df.StoredLocation)
 
 	return os.SameFile(origLinkTargetInfo, storedInfo)
 }
