@@ -119,7 +119,6 @@ var _ = Describe("Dotfile", func() {
 	})
 
 	Describe("Store", func() {
-
 		It("stores file", func() {
 			ioutil.WriteFile(orig(), []byte{}, 0777)
 
@@ -218,6 +217,48 @@ var _ = Describe("Dotfile", func() {
 		It("fails if file is not stored and linked properly", func() {
 			ioutil.WriteFile(stored(), []byte{}, 0777)
 			Expect(df().Restore()).NotTo(BeNil())
+		})
+	})
+
+	Describe("Delete", func() {
+		It("removes both stored file and link to it from original dotfile location", func() {
+			var err error
+			o, s := orig(), stored()
+
+			ioutil.WriteFile(s, []byte{}, 0777)
+			df().Link()
+
+			Expect(df().Delete()).To(BeNil())
+
+			_, err = os.Stat(s)
+			Expect(os.IsNotExist(err)).To(BeTrue())
+
+			_, err = os.Stat(o)
+			Expect(os.IsNotExist(err)).To(BeTrue())
+		})
+
+		It("removes empty nested directories in both places", func() {
+			var err error
+
+			stored, _ := filepath.Abs("config/camlistore/server-config.json")
+			orig, _ := filepath.Abs(".config/camlistore/server-config.json")
+			df := New(stored, orig)
+			os.MkdirAll(filepath.Dir(stored), 0777)
+			ioutil.WriteFile(stored, []byte{}, 0777)
+			df.Link()
+
+			Expect(df.IsLinked()).To(BeTrue())
+
+			df.Delete()
+
+			_, err = os.Stat("config")
+			Expect(os.IsNotExist(err)).To(BeTrue())
+			_, err = os.Stat(".config")
+			Expect(os.IsNotExist(err)).To(BeTrue())
+		})
+
+		It("fails if file is not stored and linked properly", func() {
+			Expect(df().Delete()).NotTo(BeNil())
 		})
 	})
 })

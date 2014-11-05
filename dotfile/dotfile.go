@@ -153,3 +153,33 @@ func (df *DotFile) Restore() error {
 
 	return nil
 }
+
+// Delete removes stored file and link to it from home dir, fails if file is
+// not linked properly.
+func (df *DotFile) Delete() error {
+	if !df.IsLinked() {
+		return errors.New("is not linked")
+	}
+
+	if err := os.Remove(df.StoredLocation); err != nil {
+		return err
+	}
+
+	if err := os.Remove(df.OriginalLocation); err != nil {
+		return err
+	}
+
+	for dir := filepath.Dir(df.StoredLocation); fsutil.IsEmptyDir(dir); dir = filepath.Dir(dir) {
+		if err := os.Remove(dir); err != nil {
+			return err
+		}
+	}
+
+	for dir := filepath.Dir(df.OriginalLocation); fsutil.IsEmptyDir(dir); dir = filepath.Dir(dir) {
+		if err := os.Remove(dir); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
