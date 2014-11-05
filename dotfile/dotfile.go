@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/vderyagin/dfm/fsutil"
 )
 
 // DotFile type represents a single dotfile, defined by its storage and
@@ -141,6 +143,12 @@ func (df *DotFile) Restore() error {
 
 	if err := os.Rename(df.StoredLocation, df.OriginalLocation); err != nil {
 		return err
+	}
+
+	for dir := filepath.Dir(df.StoredLocation); fsutil.IsEmptyDir(dir); dir = filepath.Dir(dir) {
+		if err := os.Remove(dir); err != nil {
+			return err
+		}
 	}
 
 	return nil
