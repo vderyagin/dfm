@@ -37,3 +37,17 @@ func FilesIn(dir string) []string {
 
 	return files
 }
+
+// IsEmptyDir determines whether given path corresponds to an empty directory.
+func IsEmptyDir(path string) bool {
+	if stat, err := os.Stat(path); !(err == nil && stat.IsDir()) {
+		return false
+	}
+
+	entries, err := filepath.Glob(filepath.Join(path, "*"))
+	if err != nil {
+		return false
+	}
+
+	return entries == nil
+}

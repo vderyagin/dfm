@@ -12,9 +12,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("fsutil", func() {
+var _ = Describe("FSutil", func() {
+	ExecuteEachInTempDir()
+
 	Describe("FilesIn", func() {
-		ExecuteEachInTempDir()
 		It("returns empty collection if argument does not exist", func() {
 			Expect(FilesIn("nonexistent_dir")).To(BeEmpty())
 		})
@@ -44,6 +45,26 @@ var _ = Describe("fsutil", func() {
 			ioutil.WriteFile(relPath, []byte{}, 0777)
 
 			Expect(FilesIn(".")).To(ContainElement(absPath))
+		})
+	})
+
+	Describe("IsEmptyDir", func() {
+		It("returns true if path is an empty directory", func() {
+			Expect(IsEmptyDir(".")).To(BeTrue())
+		})
+
+		It("returns false if path contains stuff", func() {
+			os.Mkdir("some_dir", 0777)
+			Expect(IsEmptyDir(".")).To(BeFalse())
+		})
+
+		It("returns false if path does not exist", func() {
+			Expect(IsEmptyDir("/non/existent/directory")).To(BeFalse())
+		})
+
+		It("returns false if path is not a directory", func() {
+			ioutil.WriteFile("file", []byte{}, 0777)
+			Expect(IsEmptyDir("file")).To(BeFalse())
 		})
 	})
 })
