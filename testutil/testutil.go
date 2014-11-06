@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/onsi/ginkgo"
 )
@@ -34,4 +35,23 @@ func ExecuteEachInTempDir() {
 		os.Chdir(startingDir)
 		os.RemoveAll(tempDir)
 	})
+}
+
+// Exists determines whether given path corresponds to an existing file.
+func Exists(path string) bool {
+	_, err := os.Lstat(path)
+	return !os.IsNotExist(err)
+}
+
+// CreateDir creates a directory at a given path, also creating it's parent
+// directories if needed. Loudly fails if anything goes wrong.
+func CreateDir(path string) {
+	os.MkdirAll(path, 0777)
+}
+
+// CreateFile creates an empty file at a given path, also creating it's parent
+// directories if needed. Loudly fails if anything goes wrong.
+func CreateFile(path string) {
+	CreateDir(filepath.Dir(path))
+	ioutil.WriteFile(path, []byte{}, 0777)
 }
