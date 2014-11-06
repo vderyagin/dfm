@@ -1,8 +1,6 @@
 package repo_test
 
 import (
-	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	. "github.com/vderyagin/dfm/repo"
@@ -31,7 +29,7 @@ var _ = Describe("Repo", func() {
 		ExecuteEachInTempDir()
 
 		It("returns empty collection for empty storage", func() {
-			os.Mkdir("empty", 0777)
+			CreateDir("empty")
 			absPath, _ := filepath.Abs("empty")
 
 			repo := New(absPath, ".")
@@ -40,7 +38,7 @@ var _ = Describe("Repo", func() {
 		})
 
 		It("returns collection including dotfile objects", func() {
-			ioutil.WriteFile("bashrc", []byte{}, 0777)
+			CreateFile("bashrc")
 			storedPath, _ := filepath.Abs("bashrc")
 			repoPath, _ := filepath.Abs(".")
 
@@ -52,8 +50,8 @@ var _ = Describe("Repo", func() {
 		})
 
 		It("returns collection including dotfile objects from nested directories", func() {
-			os.MkdirAll("foo/bar/baz", 0777)
-			ioutil.WriteFile("foo/bar/baz/bashrc", []byte{}, 0777)
+			CreateDir("foo/bar/baz")
+			CreateFile("foo/bar/baz/bashrc")
 			storedPath, _ := filepath.Abs("foo/bar/baz/bashrc")
 			repoPath, _ := filepath.Abs(".")
 
@@ -66,8 +64,8 @@ var _ = Describe("Repo", func() {
 
 		It("returns multiple files, if there multiple stored", func() {
 			repo := New(".", ".")
-			ioutil.WriteFile("foo", []byte{}, 0777)
-			ioutil.WriteFile("bar", []byte{}, 0777)
+			CreateFile("foo")
+			CreateFile("bar")
 
 			Expect(repo.StoredDotFiles()).To(HaveLen(2))
 		})

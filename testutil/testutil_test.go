@@ -1,7 +1,6 @@
 package testutil_test
 
 import (
-	"io/ioutil"
 	"os"
 
 	. "github.com/vderyagin/dfm/testutil"
@@ -15,12 +14,12 @@ var _ = Describe("TestUtil", func() {
 
 	Describe("Exists", func() {
 		It("returns true if given path corresponds to existing file", func() {
-			ioutil.WriteFile("a_file", []byte{}, 0777)
+			CreateFile("a_file")
 			Expect(Exists("a_file")).To(BeTrue())
 		})
 
 		It("returns true if given path corresponds to existing directory", func() {
-			os.Mkdir("a_dir", 0777)
+			CreateDir("a_dir")
 			Expect(Exists("a_dir")).To(BeTrue())
 		})
 
@@ -29,7 +28,7 @@ var _ = Describe("TestUtil", func() {
 		})
 
 		It("returns true if there's symlink with missing target at given path", func() {
-			ioutil.WriteFile("a_file", []byte{}, 0777)
+			CreateFile("a_file")
 			os.Symlink("a_file", "a_symlink")
 			os.Remove("a_file")
 			Expect(Exists("a_symlink")).To(BeTrue())

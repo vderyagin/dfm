@@ -1,8 +1,6 @@
 package fsutil_test
 
 import (
-	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	. "github.com/vderyagin/dfm/fsutil"
@@ -25,7 +23,7 @@ var _ = Describe("FSutil", func() {
 		})
 
 		It("returns empty collection for directory with hidden files", func() {
-			ioutil.WriteFile(".hidden", []byte{}, 0777)
+			CreateFile(".hidden")
 
 			Expect(FilesIn(".")).To(BeEmpty())
 		})
@@ -33,7 +31,7 @@ var _ = Describe("FSutil", func() {
 		It("returns collection including regular non-hidden files", func() {
 			baseName := "bashrc"
 			absPath, _ := filepath.Abs(baseName)
-			ioutil.WriteFile(baseName, []byte{}, 0777)
+			CreateFile(baseName)
 
 			Expect(FilesIn(".")).To(ContainElement(absPath))
 		})
@@ -41,8 +39,8 @@ var _ = Describe("FSutil", func() {
 		It("returns collection including deeply nested files", func() {
 			relPath := "config/camlistore/server-config.json"
 			absPath, _ := filepath.Abs(relPath)
-			os.MkdirAll(filepath.Dir(absPath), 0777)
-			ioutil.WriteFile(relPath, []byte{}, 0777)
+			CreateDir(filepath.Dir(absPath))
+			CreateFile(relPath)
 
 			Expect(FilesIn(".")).To(ContainElement(absPath))
 		})
@@ -54,7 +52,7 @@ var _ = Describe("FSutil", func() {
 		})
 
 		It("returns false if path contains stuff", func() {
-			os.Mkdir("some_dir", 0777)
+			CreateDir("some_dir")
 			Expect(IsEmptyDir(".")).To(BeFalse())
 		})
 
@@ -63,23 +61,19 @@ var _ = Describe("FSutil", func() {
 		})
 
 		It("returns false if path is not a directory", func() {
-			ioutil.WriteFile("file", []byte{}, 0777)
+			CreateFile("file")
 			Expect(IsEmptyDir("file")).To(BeFalse())
 		})
 	})
 
 	Describe("DeleteEmptyDirs", func() {
 		It("deletes all directories in hierarchy until non-empty one", func() {
-			var err error
-			os.MkdirAll("foo/bar/baz/quux", 0777)
-			ioutil.WriteFile("foo/a_file", []byte{}, 0777)
+			CreateDir("foo/bar/baz/quux")
+			CreateFile("foo/a_file")
 
 			Expect(DeleteEmptyDirs("foo/bar/baz/quux")).To(BeNil())
-
-			_, err = os.Stat("foo/bar")
-			Expect(os.IsNotExist(err)).To(BeTrue())
-			_, err = os.Stat("foo")
-			Expect(os.IsNotExist(err)).To(BeFalse())
+			Expect(Exists("foo/bar")).To(BeFalse())
+			Expect(Exists("foo")).To(BeTrue())
 		})
 
 		It("silengly exits if directory does not exist", func() {
@@ -87,10 +81,9 @@ var _ = Describe("FSutil", func() {
 		})
 
 		It("silengly exits if argument is not a directory", func() {
-			ioutil.WriteFile("a_file", []byte{}, 0777)
+			CreateFile("a_file")
 			Expect(DeleteEmptyDirs("a_file")).To(BeNil())
-			_, err := os.Stat("a_file")
-			Expect(os.IsNotExist(err)).To(BeFalse())
+			Expect(Exists("a_file")).To(BeTrue())
 		})
 	})
 })
