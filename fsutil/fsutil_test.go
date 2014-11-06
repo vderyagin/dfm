@@ -67,4 +67,30 @@ var _ = Describe("FSutil", func() {
 			Expect(IsEmptyDir("file")).To(BeFalse())
 		})
 	})
+
+	Describe("DeleteEmptyDirs", func() {
+		It("deletes all directories in hierarchy until non-empty one", func() {
+			var err error
+			os.MkdirAll("foo/bar/baz/quux", 0777)
+			ioutil.WriteFile("foo/a_file", []byte{}, 0777)
+
+			Expect(DeleteEmptyDirs("foo/bar/baz/quux")).To(BeNil())
+
+			_, err = os.Stat("foo/bar")
+			Expect(os.IsNotExist(err)).To(BeTrue())
+			_, err = os.Stat("foo")
+			Expect(os.IsNotExist(err)).To(BeFalse())
+		})
+
+		It("silengly exits if directory does not exist", func() {
+			Expect(DeleteEmptyDirs("non_existent_directory")).To(BeNil())
+		})
+
+		It("silengly exits if argument is not a directory", func() {
+			ioutil.WriteFile("a_file", []byte{}, 0777)
+			Expect(DeleteEmptyDirs("a_file")).To(BeNil())
+			_, err := os.Stat("a_file")
+			Expect(os.IsNotExist(err)).To(BeFalse())
+		})
+	})
 })

@@ -145,10 +145,8 @@ func (df *DotFile) Restore() error {
 		return err
 	}
 
-	for dir := filepath.Dir(df.StoredLocation); fsutil.IsEmptyDir(dir); dir = filepath.Dir(dir) {
-		if err := os.Remove(dir); err != nil {
-			return err
-		}
+	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {
+		return err
 	}
 
 	return nil
@@ -169,16 +167,12 @@ func (df *DotFile) Delete() error {
 		return err
 	}
 
-	for dir := filepath.Dir(df.StoredLocation); fsutil.IsEmptyDir(dir); dir = filepath.Dir(dir) {
-		if err := os.Remove(dir); err != nil {
-			return err
-		}
+	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {
+		return err
 	}
 
-	for dir := filepath.Dir(df.OriginalLocation); fsutil.IsEmptyDir(dir); dir = filepath.Dir(dir) {
-		if err := os.Remove(dir); err != nil {
-			return err
-		}
+	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.OriginalLocation)); err != nil {
+		return err
 	}
 
 	return nil

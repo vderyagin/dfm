@@ -51,3 +51,15 @@ func IsEmptyDir(path string) bool {
 
 	return entries == nil
 }
+
+// DeleteEmptyDirs remove empty directories starting at given path and going
+// up filesystem hierarchy until it encounters a non-empty directory.
+func DeleteEmptyDirs(start string) error {
+	for dir := start; IsEmptyDir(dir); dir = filepath.Dir(dir) {
+		if err := os.Remove(dir); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
