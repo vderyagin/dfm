@@ -71,18 +71,18 @@ var _ = Describe("FSutil", func() {
 			CreateDir("foo/bar/baz/quux")
 			CreateFile("foo/a_file")
 
-			Expect(DeleteEmptyDirs("foo/bar/baz/quux")).To(BeNil())
+			Expect(DeleteEmptyDirs("foo/bar/baz/quux")).To(Succeed())
 			Expect(Exists("foo/bar")).To(BeFalse())
 			Expect(Exists("foo")).To(BeTrue())
 		})
 
 		It("silengly exits if directory does not exist", func() {
-			Expect(DeleteEmptyDirs("non_existent_directory")).To(BeNil())
+			Expect(DeleteEmptyDirs("non_existent_directory")).To(Succeed())
 		})
 
 		It("silengly exits if argument is not a directory", func() {
 			CreateFile("a_file")
-			Expect(DeleteEmptyDirs("a_file")).To(BeNil())
+			Expect(DeleteEmptyDirs("a_file")).To(Succeed())
 			Expect(Exists("a_file")).To(BeTrue())
 		})
 	})

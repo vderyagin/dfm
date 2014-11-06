@@ -122,7 +122,7 @@ var _ = Describe("Dotfile", func() {
 			CreateFile(orig())
 
 			Expect(df().IsStored()).To(BeFalse())
-			Expect(df().Store()).To(BeNil())
+			Expect(df().Store()).To(Succeed())
 			Expect(df().IsStored()).To(BeTrue())
 		})
 
@@ -134,12 +134,12 @@ var _ = Describe("Dotfile", func() {
 			CreateFile(orig)
 
 			Expect(df.IsStored()).To(BeFalse())
-			Expect(df.Store()).To(BeNil())
+			Expect(df.Store()).To(Succeed())
 			Expect(df.IsStored()).To(BeTrue())
 		})
 
 		It("fails if file is not ready to be stored", func() {
-			Expect(df().Store()).NotTo(BeNil())
+			Expect(df().Store()).NotTo(Succeed())
 			Expect(df().IsStored()).To(BeFalse())
 		})
 	})
@@ -149,7 +149,7 @@ var _ = Describe("Dotfile", func() {
 			CreateFile(stored())
 
 			Expect(df().IsLinked()).To(BeFalse())
-			Expect(df().Link()).To(BeNil())
+			Expect(df().Link()).To(Succeed())
 			Expect(df().IsLinked()).To(BeTrue())
 		})
 
@@ -161,26 +161,26 @@ var _ = Describe("Dotfile", func() {
 			CreateFile(stored)
 
 			Expect(df.IsLinked()).To(BeFalse())
-			Expect(df.Link()).To(BeNil())
+			Expect(df.Link()).To(Succeed())
 			Expect(df.IsLinked()).To(BeTrue())
 		})
 
 		It("fails if file is not stored", func() {
-			Expect(df().Link()).NotTo(BeNil())
+			Expect(df().Link()).NotTo(Succeed())
 		})
 
 		It("fails if file is already linked", func() {
 			CreateFile(stored())
 			os.Symlink(stored(), orig())
 
-			Expect(df().Link()).NotTo(BeNil())
+			Expect(df().Link()).NotTo(Succeed())
 		})
 
 		It("fails if there's conficting file at original location", func() {
 			CreateFile(stored())
 			CreateFile(orig())
 
-			Expect(df().Link()).NotTo(BeNil())
+			Expect(df().Link()).NotTo(Succeed())
 		})
 	})
 
@@ -190,7 +190,7 @@ var _ = Describe("Dotfile", func() {
 			df().Link()
 
 			Expect(df().IsLinked()).To(BeTrue())
-			Expect(df().Restore()).To(BeNil())
+			Expect(df().Restore()).To(Succeed())
 			Expect(df().IsLinked()).To(BeFalse())
 			Expect(df().IsReadyToBeStored()).To(BeTrue())
 		})
@@ -204,7 +204,7 @@ var _ = Describe("Dotfile", func() {
 			df.Link()
 
 			Expect(df.IsLinked()).To(BeTrue())
-			Expect(df.Restore()).To(BeNil())
+			Expect(df.Restore()).To(Succeed())
 
 			Expect(Exists("config")).To(BeFalse())
 			Expect(df.IsLinked()).To(BeFalse())
@@ -213,7 +213,7 @@ var _ = Describe("Dotfile", func() {
 
 		It("fails if file is not stored and linked properly", func() {
 			CreateFile(stored())
-			Expect(df().Restore()).NotTo(BeNil())
+			Expect(df().Restore()).NotTo(Succeed())
 		})
 	})
 
@@ -224,7 +224,7 @@ var _ = Describe("Dotfile", func() {
 			CreateFile(s)
 			df().Link()
 
-			Expect(df().Delete()).To(BeNil())
+			Expect(df().Delete()).To(Succeed())
 
 			Expect(Exists(s)).To(BeFalse())
 			Expect(Exists(o)).To(BeFalse())
@@ -247,7 +247,7 @@ var _ = Describe("Dotfile", func() {
 		})
 
 		It("fails if file is not stored and linked properly", func() {
-			Expect(df().Delete()).NotTo(BeNil())
+			Expect(df().Delete()).NotTo(Succeed())
 		})
 	})
 })
