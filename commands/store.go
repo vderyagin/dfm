@@ -1,16 +1,15 @@
 package commands
 
-import (
-	"fmt"
-
-	"github.com/codegangsta/cli"
-)
+import "github.com/codegangsta/cli"
 
 // Store stores and links back given files.
 func Store(c *cli.Context) {
 	for _, df := range ArgDotFiles(c) {
-		if err := df.Store(); err != nil {
-			fmt.Println(err)
+		logger := Logger(c, df)
+		if err := df.Store(); err == nil {
+			logger.Success("stored")
+		} else {
+			logger.Fail("failed to store", err.Error())
 		}
 	}
 }

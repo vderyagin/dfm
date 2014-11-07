@@ -8,6 +8,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/vderyagin/dfm/dotfile"
+	"github.com/vderyagin/dfm/logger"
 	"github.com/vderyagin/dfm/repo"
 )
 
@@ -46,4 +47,11 @@ func ArgDotFiles(c *cli.Context) []*dotfile.DotFile {
 	}
 
 	return dotfiles
+}
+
+// Logger returns a Logger for given dotfile.
+func Logger(c *cli.Context, df *dotfile.DotFile) *logger.Logger {
+	repo := Repo(c)
+	id, _ := filepath.Rel(repo.Store, df.StoredLocation)
+	return logger.New(id)
 }
