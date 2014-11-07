@@ -4,15 +4,11 @@ import (
 	"fmt"
 
 	"github.com/codegangsta/cli"
-	"github.com/vderyagin/dfm/repo"
 )
 
 // List displays a list of stored dotfiles.
 func List(c *cli.Context) {
-	store := c.GlobalString("store")
-	home := c.GlobalString("home")
-
-	for _, df := range repo.New(store, home).StoredDotFiles() {
+	for _, df := range Repo(c).StoredDotFiles() {
 		fmt.Println(df)
 	}
 }
