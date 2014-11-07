@@ -3,6 +3,7 @@ package repo
 import (
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/vderyagin/dfm/dotfile"
 	"github.com/vderyagin/dfm/fsutil"
@@ -59,4 +60,20 @@ func (r *Repo) OriginalFilePath(stored string) string {
 	}
 
 	return filepath.Join(r.Home, "."+relPath)
+}
+
+// StoredFilePath computes a path for stored dotfile corresponding to a given
+// original path.
+func (r *Repo) StoredFilePath(orig string) string {
+	relPath, err := filepath.Rel(r.Home, orig)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !strings.HasPrefix(relPath, ".") {
+		panic("not a dotfile")
+	}
+
+	return filepath.Join(r.Store, strings.TrimPrefix(relPath, "."))
 }

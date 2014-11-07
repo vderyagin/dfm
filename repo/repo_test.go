@@ -84,4 +84,24 @@ var _ = Describe("Repo", func() {
 			Expect(orig).To(Equal(filepath.Join(repo.Home, ".config/camlistore/server-config.json")))
 		})
 	})
+
+	Describe("StoredFilePath", func() {
+		repo := New("/store", "/")
+
+		It("returns proper file name for simple case", func() {
+			stored := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"))
+			Expect(stored).To(Equal(filepath.Join(repo.Store, "bashrc")))
+		})
+
+		It("returns proper file name for for deeply nested file", func() {
+			stored := repo.StoredFilePath(filepath.Join(repo.Home, ".config/camlistore/server-config.json"))
+			Expect(stored).To(Equal(filepath.Join(repo.Store, "config/camlistore/server-config.json")))
+		})
+
+		It("fails if path from home directory does not start with dot", func() {
+			Expect(func() {
+				repo.StoredFilePath(filepath.Join(repo.Home, "bashrc"))
+			}).To(Panic())
+		})
+	})
 })
