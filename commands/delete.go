@@ -1,16 +1,16 @@
 package commands
 
-import (
-	"fmt"
-
-	"github.com/codegangsta/cli"
-)
+import "github.com/codegangsta/cli"
 
 // Delete removes both stored file and it's symlink.
 func Delete(c *cli.Context) {
 	for _, df := range ArgDotFiles(c) {
-		if err := df.Delete(); err != nil {
-			fmt.Println(err)
+		logger := Logger(c, df)
+
+		if err := df.Delete(); err == nil {
+			logger.Success("deleted")
+		} else {
+			logger.Fail("failed to delete", err.Error())
 		}
 	}
 }
