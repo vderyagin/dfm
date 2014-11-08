@@ -27,7 +27,7 @@ func FilesIn(dir string) []string {
 			return nil
 		}
 
-		if basename := filepath.Base(path); strings.HasPrefix(basename, ".") {
+		if relPath, _ := filepath.Rel(dir, path); strings.HasPrefix(relPath, ".") {
 			return nil
 		}
 

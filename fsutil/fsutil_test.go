@@ -24,6 +24,7 @@ var _ = Describe("FSutil", func() {
 
 		It("returns empty collection for directory with hidden files", func() {
 			CreateFile(".hidden")
+			CreateFile(".foo/bar/baz")
 
 			Expect(FilesIn(".")).To(BeEmpty())
 		})
