@@ -87,6 +87,10 @@ func (df *DotFile) IsReadyToBeStored() bool {
 
 // Store puts file in storage and links it back from there.
 func (df *DotFile) Store() error {
+	if df.IsLinked() {
+		return errors.New("is stored and linked already")
+	}
+
 	if !df.IsReadyToBeStored() {
 		return errors.New("can not store")
 	}
@@ -109,11 +113,11 @@ func (df *DotFile) Store() error {
 // Link links stored dotfile to its original location.
 func (df *DotFile) Link() error {
 	if !df.IsStored() {
-		return errors.New("file is not even stored")
+		return errors.New("can link only already stored files")
 	}
 
 	if df.IsLinked() {
-		return errors.New("file is linked already")
+		return errors.New("is linked already")
 	}
 
 	if _, err := os.Lstat(df.OriginalLocation); !os.IsNotExist(err) {
@@ -134,7 +138,7 @@ func (df *DotFile) Link() error {
 // Restore moves stored file back into its original location, replacing symlink.
 func (df *DotFile) Restore() error {
 	if !df.IsLinked() {
-		return errors.New("is not linked")
+		return errors.New("can restore only properly linked files")
 	}
 
 	if err := os.Remove(df.OriginalLocation); err != nil {
@@ -156,7 +160,7 @@ func (df *DotFile) Restore() error {
 // not linked properly.
 func (df *DotFile) Delete() error {
 	if !df.IsLinked() {
-		return errors.New("is not linked")
+		return errors.New("can delete only properly linked files")
 	}
 
 	if err := os.Remove(df.StoredLocation); err != nil {
