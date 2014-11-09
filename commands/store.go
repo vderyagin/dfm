@@ -6,7 +6,10 @@ import "github.com/codegangsta/cli"
 func Store(c *cli.Context) {
 	for _, df := range ArgDotFiles(c) {
 		logger := Logger(c, df)
-		if err := df.Store(); err == nil {
+
+		if df.IsLinked() {
+			logger.Skip("skipped storing", "is already stored and linked")
+		} else if err := df.Store(); err == nil {
 			logger.Success("stored")
 		} else {
 			logger.Fail("failed to store", err.Error())
