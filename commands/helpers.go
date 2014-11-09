@@ -43,7 +43,11 @@ func ArgDotFiles(c *cli.Context) []*dotfile.DotFile {
 			log.Fatal(err)
 		}
 
-		dotfiles[idx] = dotfile.New(repo.StoredFilePath(orig), orig)
+		if stored, err := repo.StoredFilePath(orig); err != nil {
+			log.Fatal(err)
+		} else {
+			dotfiles[idx] = dotfile.New(stored, orig)
+		}
 	}
 
 	return dotfiles

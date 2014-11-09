@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 	"strings"
@@ -13,8 +14,8 @@ import (
 type Repo struct{ Store, Home string }
 
 // New returns a pointer to new instance of Repo. Makes sure that paths Repo
-// initialized with are absolute, panics if they are not absolute and can not
-// be made that.
+// initialized with are absolute, fails loudly if they are not absolute and
+// can not be made that.
 func New(store, home string) *Repo {
 	var absStore, absHome string
 	var err error
@@ -64,7 +65,7 @@ func (r *Repo) OriginalFilePath(stored string) string {
 
 // StoredFilePath computes a path for stored dotfile corresponding to a given
 // original path.
-func (r *Repo) StoredFilePath(orig string) string {
+func (r *Repo) StoredFilePath(orig string) (string, error) {
 	relPath, err := filepath.Rel(r.Home, orig)
 
 	if err != nil {
@@ -72,8 +73,8 @@ func (r *Repo) StoredFilePath(orig string) string {
 	}
 
 	if !strings.HasPrefix(relPath, ".") {
-		panic("not a dotfile")
+		return "", fmt.Errorf("%s is not a dotfile", orig)
 	}
 
-	return filepath.Join(r.Store, strings.TrimPrefix(relPath, "."))
+	return filepath.Join(r.Store, strings.TrimPrefix(relPath, ".")), nil
 }
