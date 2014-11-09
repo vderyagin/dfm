@@ -1,6 +1,7 @@
 package fsutil_test
 
 import (
+	"os"
 	"path/filepath"
 
 	. "github.com/vderyagin/dfm/fsutil"
@@ -85,6 +86,29 @@ var _ = Describe("FSutil", func() {
 			CreateFile("a_file")
 			Expect(DeleteEmptyDirs("a_file")).To(Succeed())
 			Expect(Exists("a_file")).To(BeTrue())
+		})
+	})
+
+	Describe("Exists", func() {
+		It("returns true if given path corresponds to existing file", func() {
+			CreateFile("a_file")
+			Expect(Exists("a_file")).To(BeTrue())
+		})
+
+		It("returns true if given path corresponds to existing directory", func() {
+			CreateDir("a_dir")
+			Expect(Exists("a_dir")).To(BeTrue())
+		})
+
+		It("returns false if there's no file at given path", func() {
+			Expect(Exists("nonexistent_file")).To(BeFalse())
+		})
+
+		It("returns true if there's symlink with missing target at given path", func() {
+			CreateFile("a_file")
+			os.Symlink("a_file", "a_symlink")
+			os.Remove("a_file")
+			Expect(Exists("a_symlink")).To(BeTrue())
 		})
 	})
 })

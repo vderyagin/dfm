@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	. "github.com/vderyagin/dfm/dotfile"
+	. "github.com/vderyagin/dfm/fsutil"
 	. "github.com/vderyagin/dfm/testutil"
 
 	. "github.com/onsi/ginkgo"

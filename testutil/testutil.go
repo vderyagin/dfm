@@ -37,12 +37,6 @@ func ExecuteEachInTempDir() {
 	})
 }
 
-// Exists determines whether given path corresponds to an existing file.
-func Exists(path string) bool {
-	_, err := os.Lstat(path)
-	return !os.IsNotExist(err)
-}
-
 // CreateDir creates a directory at a given path, also creating it's parent
 // directories if needed. Loudly fails if anything goes wrong.
 func CreateDir(path string) {

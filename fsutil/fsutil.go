@@ -63,3 +63,9 @@ func DeleteEmptyDirs(start string) error {
 
 	return nil
 }
+
+// Exists determines whether given path corresponds to an existing file.
+func Exists(path string) bool {
+	_, err := os.Lstat(path)
+	return !os.IsNotExist(err)
+}
