@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/vderyagin/dfm/dotfile"
 	"github.com/vderyagin/dfm/fsutil"
+	"github.com/vderyagin/dfm/host"
 )
 
 // Repo represents a place where dotfiles are stored.
@@ -60,12 +62,14 @@ func (r *Repo) OriginalFilePath(stored string) string {
 		log.Fatal(err)
 	}
 
+	relPath = regexp.MustCompile(`\.host-[[:alpha:]]+\z`).ReplaceAllLiteralString(relPath, "")
+
 	return filepath.Join(r.Home, "."+relPath)
 }
 
 // StoredFilePath computes a path for stored dotfile corresponding to a given
 // original path.
-func (r *Repo) StoredFilePath(orig string) (string, error) {
+func (r *Repo) StoredFilePath(orig string, hostSpecific bool) (string, error) {
 	relPath, err := filepath.Rel(r.Home, orig)
 
 	if err != nil {
@@ -76,5 +80,15 @@ func (r *Repo) StoredFilePath(orig string) (string, error) {
 		return "", fmt.Errorf("%s is not a dotfile", orig)
 	}
 
-	return filepath.Join(r.Store, strings.TrimPrefix(relPath, ".")), nil
+	storedRelPath := strings.TrimPrefix(relPath, ".")
+
+	if hostSpecific {
+		storedRelPath += hostSpecificSuffix()
+	}
+
+	return filepath.Join(r.Store, storedRelPath), nil
+}
+
+func hostSpecificSuffix() string {
+	return ".host-" + host.Name()
 }

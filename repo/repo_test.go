@@ -85,13 +85,29 @@ var _ = Describe("Repo", func() {
 
 			Expect(orig).To(Equal(filepath.Join(repo.Home, ".config/camlistore/server-config.json")))
 		})
+
+		Context("host-specific dotfiles", func() {
+			ExecuteEachWithHostName("myhost")
+
+			It("removes host-specific suffix for current host", func() {
+				orig := repo.OriginalFilePath(filepath.Join(repo.Store, "bashrc.host-myhost"))
+
+				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
+			})
+
+			It("removes host-specific suffix for other hosts", func() {
+				orig := repo.OriginalFilePath(filepath.Join(repo.Store, "bashrc.host-otherhost"))
+
+				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
+			})
+		})
 	})
 
 	Describe("StoredFilePath", func() {
 		repo := New("/store", "/")
 
 		It("returns proper file name for simple case", func() {
-			stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"))
+			stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), false)
 
 			Expect(err).To(Succeed())
 			Expect(stored).To(Equal(filepath.Join(repo.Store, "bashrc")))
@@ -99,17 +115,28 @@ var _ = Describe("Repo", func() {
 
 		It("returns proper file name for for deeply nested file", func() {
 			orig := filepath.Join(repo.Home, ".config/camlistore/server-config.json")
-			stored, err := repo.StoredFilePath(orig)
+			stored, err := repo.StoredFilePath(orig, false)
 
 			Expect(err).To(Succeed())
 			Expect(stored).To(Equal(filepath.Join(repo.Store, "config/camlistore/server-config.json")))
 		})
 
 		It("fails if path from home directory does not start with dot", func() {
-			df, err := repo.StoredFilePath(filepath.Join(repo.Home, "bashrc"))
+			df, err := repo.StoredFilePath(filepath.Join(repo.Home, "bashrc"), false)
 
 			Expect(df).To(BeEmpty())
 			Expect(err).NotTo(Succeed())
+		})
+
+		Context("host-specific dotfiles", func() {
+			ExecuteEachWithHostName("myhost")
+
+			It("returns name with host-specific suffix", func() {
+				df, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), true)
+
+				Expect(err).To(Succeed())
+				Expect(df).To(HaveSuffix(".host-myhost"))
+			})
 		})
 	})
 })
