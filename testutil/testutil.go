@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/onsi/ginkgo"
+	"github.com/vderyagin/dfm/host"
 )
 
 // ExecuteEachInTempDir makes Ginkgo run each test in given context in
@@ -34,6 +35,21 @@ func ExecuteEachInTempDir() {
 	ginkgo.AfterEach(func() {
 		os.Chdir(startingDir)
 		os.RemoveAll(tempDir)
+	})
+}
+
+// ExecuteEachWithHostName makes Ginkgo run each test in give context with HOST
+// enviroment variable assigned to a given string. HOST is restored to its
+// original value after each test run.
+func ExecuteEachWithHostName(hostName string) {
+	originalHostName := host.Name()
+
+	ginkgo.BeforeEach(func() {
+		os.Setenv("HOST", hostName)
+	})
+
+	ginkgo.AfterEach(func() {
+		os.Setenv("HOST", originalHostName)
 	})
 }
 
