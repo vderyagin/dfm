@@ -47,6 +47,12 @@ var appCommands = []cli.Command{
 		ShortName: "s",
 		Usage:     "Put file into store",
 		Action:    commands.Store,
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "force",
+				Usage: "Overwrite conflicting file if necessary",
+			},
+		},
 	},
 	{
 		Name:      "restore",
@@ -58,6 +64,12 @@ var appCommands = []cli.Command{
 		Name:   "link",
 		Usage:  "Link all stored files to their original locations",
 		Action: commands.Link,
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "force",
+				Usage: "Overwrite conflicting file if necessary",
+			},
+		},
 	},
 	{
 		Name:      "delete",
