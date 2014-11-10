@@ -69,3 +69,14 @@ func Exists(path string) bool {
 	_, err := os.Lstat(path)
 	return !os.IsNotExist(err)
 }
+
+// IsRegularFile determines whether given path corresponds to a regular file.
+func IsRegularFile(path string) bool {
+	fi, err := os.Lstat(path)
+
+	if err != nil {
+		return false
+	}
+
+	return fi.Mode().IsRegular()
+}
