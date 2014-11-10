@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/vderyagin/dfm/dotfile"
@@ -39,7 +38,10 @@ func New(store, home string) *Repo {
 // StoredDotFiles returns a collection, containing DotFile object for each
 // stored dotfile.
 func (r *Repo) StoredDotFiles() []*dotfile.DotFile {
-	var dotfiles []*dotfile.DotFile
+	// Populate map indexed by dotfile original path to be able to weed out
+	// conflicts - multiple dotfiles attempting to be linked from the same path
+	// in home directory.
+	dfMap := make(map[string]*dotfile.DotFile)
 
 	for _, file := range fsutil.FilesIn(r.Store) {
 		df := dotfile.DotFile{
@@ -47,7 +49,16 @@ func (r *Repo) StoredDotFiles() []*dotfile.DotFile {
 			OriginalLocation: r.OriginalFilePath(file),
 		}
 
-		dotfiles = append(dotfiles, &df)
+		if _, clash := dfMap[df.OriginalLocation]; !clash && df.IsGeneric() || df.IsFromThisHost() {
+			dfMap[df.OriginalLocation] = &df
+		}
+	}
+
+	// Collect values from map into slice and return it.
+	var dotfiles []*dotfile.DotFile
+
+	for _, df := range dfMap {
+		dotfiles = append(dotfiles, df)
 	}
 
 	return dotfiles
@@ -62,7 +73,7 @@ func (r *Repo) OriginalFilePath(stored string) string {
 		log.Fatal(err)
 	}
 
-	relPath = regexp.MustCompile(`\.host-[[:alpha:]]+\z`).ReplaceAllLiteralString(relPath, "")
+	relPath = host.RemoveSuffix(relPath)
 
 	return filepath.Join(r.Home, "."+relPath)
 }
@@ -83,12 +94,8 @@ func (r *Repo) StoredFilePath(orig string, hostSpecific bool) (string, error) {
 	storedRelPath := strings.TrimPrefix(relPath, ".")
 
 	if hostSpecific {
-		storedRelPath += hostSpecificSuffix()
+		storedRelPath += host.DotFileSuffix()
 	}
 
 	return filepath.Join(r.Store, storedRelPath), nil
-}
-
-func hostSpecificSuffix() string {
-	return ".host-" + host.Name()
 }

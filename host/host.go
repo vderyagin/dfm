@@ -3,6 +3,7 @@ package host
 import (
 	"log"
 	"os"
+	"regexp"
 )
 
 // Name returns a hostname of a host machine. Can be overridden by setting
@@ -20,3 +21,17 @@ func Name() string {
 
 	return name
 }
+
+// DotFileSuffix returns a suffix to be added to host-specific dotfiles' paths.
+func DotFileSuffix() string {
+	return ".host-" + Name()
+}
+
+// RemoveSuffix returns string without host-specific suffix, returns original
+// string if it has no such suffix.
+func RemoveSuffix(input string) string {
+	return PathRegexp.ReplaceAllLiteralString(input, "")
+}
+
+// PathRegexp returns regexp matching path of any host-specific dotfile.
+var PathRegexp = regexp.MustCompile(`\.host-[[:alpha:]]+\z`)

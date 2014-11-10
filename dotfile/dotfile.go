@@ -5,8 +5,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/vderyagin/dfm/fsutil"
+	"github.com/vderyagin/dfm/host"
 )
 
 // DotFile type represents a single dotfile, defined by its storage and
@@ -180,4 +182,16 @@ func (df *DotFile) Delete() error {
 	}
 
 	return nil
+}
+
+// IsFromThisHost returns true if dotfile is specific to current host, false
+// otherwise.
+func (df *DotFile) IsFromThisHost() bool {
+	return strings.HasSuffix(df.StoredLocation, host.DotFileSuffix())
+}
+
+// IsGeneric returns true if dotfile is not specific to any host, false
+// otherwise.
+func (df *DotFile) IsGeneric() bool {
+	return !host.PathRegexp.MatchString(df.StoredLocation)
 }

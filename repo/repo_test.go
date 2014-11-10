@@ -69,6 +69,60 @@ var _ = Describe("Repo", func() {
 
 			Expect(repo.StoredDotFiles()).To(HaveLen(2))
 		})
+
+		Context("host-specific dotfiles", func() {
+			ExecuteEachWithHostName("myhost")
+
+			It("returns only one of multiple files with same original location", func() {
+				repo := New(".", ".")
+				CreateFile("bashrc")
+				CreateFile("bashrc.host-myhost")
+				CreateFile("bashrc.host-otherhost")
+
+				Expect(repo.StoredDotFiles()).To(HaveLen(1))
+			})
+
+			It("ignores all dotfiles specific to other hosts", func() {
+				repo := New(".", ".")
+				CreateFile("bashrc.host-otherhost")
+				CreateFile("bashrc.host-stillotherhost")
+
+				Expect(repo.StoredDotFiles()).To(BeEmpty())
+			})
+
+			It("favors files specific to current host over files from other host", func() {
+				repo := New(".", ".")
+				CreateFile("bashrc.host-myhost")
+				CreateFile("bashrc.host-otherhost")
+
+				expected, _ := filepath.Abs("bashrc.host-myhost")
+				dotfiles := repo.StoredDotFiles()
+				Expect(dotfiles).To(HaveLen(1))
+				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
+			})
+
+			It("favors files specific to current host over generic ones", func() {
+				repo := New(".", ".")
+				CreateFile("bashrc")
+				CreateFile("bashrc.host-myhost")
+
+				expected, _ := filepath.Abs("bashrc.host-myhost")
+				dotfiles := repo.StoredDotFiles()
+				Expect(dotfiles).To(HaveLen(1))
+				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
+			})
+
+			It("favors generic files over files specific to other hosts", func() {
+				repo := New(".", ".")
+				CreateFile("bashrc")
+				CreateFile("bashrc.host-otherhost")
+
+				expected, _ := filepath.Abs("bashrc")
+				dotfiles := repo.StoredDotFiles()
+				Expect(dotfiles).To(HaveLen(1))
+				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
+			})
+		})
 	})
 
 	Describe("OriginalFilePath", func() {

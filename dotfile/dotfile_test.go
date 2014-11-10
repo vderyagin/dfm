@@ -251,4 +251,57 @@ var _ = Describe("Dotfile", func() {
 			Expect(df().Delete()).NotTo(Succeed())
 		})
 	})
+
+	Context("host-specific predicates", func() {
+		ExecuteEachWithHostName("myhost")
+
+		generic := func() *DotFile {
+			s, _ := filepath.Abs("foo")
+			o, _ := filepath.Abs(".foo")
+
+			return New(s, o)
+		}
+
+		thisHostSpecific := func() *DotFile {
+			s, _ := filepath.Abs("foo.host-myhost")
+			o, _ := filepath.Abs(".foo")
+
+			return New(s, o)
+		}
+
+		otherHostSpecific := func() *DotFile {
+			s, _ := filepath.Abs("foo.host-otherhost")
+			o, _ := filepath.Abs(".foo")
+
+			return New(s, o)
+		}
+
+		Describe("IsFromThisHost", func() {
+			It("returns true for dotfiles specific to current host", func() {
+				Expect(thisHostSpecific().IsFromThisHost()).To(BeTrue())
+			})
+
+			It("returns false for generic files", func() {
+				Expect(generic().IsFromThisHost()).To(BeFalse())
+			})
+
+			It("returns false for dotfiles specific to some other host", func() {
+				Expect(otherHostSpecific().IsFromThisHost()).To(BeFalse())
+			})
+		})
+
+		Describe("IsGeneric", func() {
+			It("returns false for dotfiles specific to current host", func() {
+				Expect(thisHostSpecific().IsGeneric()).To(BeFalse())
+			})
+
+			It("returns true for generic files", func() {
+				Expect(generic().IsGeneric()).To(BeTrue())
+			})
+
+			It("returns false for dotfiles specific to some other host", func() {
+				Expect(otherHostSpecific().IsGeneric()).To(BeFalse())
+			})
+		})
+	})
 })

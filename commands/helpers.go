@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/codegangsta/cli"
+
 	"github.com/vderyagin/dfm/dotfile"
 	"github.com/vderyagin/dfm/logger"
 	"github.com/vderyagin/dfm/repo"
@@ -43,7 +44,7 @@ func ArgDotFiles(c *cli.Context) []*dotfile.DotFile {
 			log.Fatal(err)
 		}
 
-		if stored, err := repo.StoredFilePath(orig); err != nil {
+		if stored, err := repo.StoredFilePath(orig, c.Bool("host")); err != nil {
 			log.Fatal(err)
 		} else {
 			dotfiles[idx] = dotfile.New(stored, orig)
