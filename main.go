@@ -50,7 +50,7 @@ var appCommands = []cli.Command{
 		Flags: []cli.Flag{
 			cli.BoolFlag{
 				Name:  "force",
-				Usage: "Overwrite conflicting file if necessary",
+				Usage: "Overwrite conflicting files if necessary",
 			},
 		},
 	},
@@ -67,7 +67,7 @@ var appCommands = []cli.Command{
 		Flags: []cli.Flag{
 			cli.BoolFlag{
 				Name:  "force",
-				Usage: "Overwrite conflicting file if necessary",
+				Usage: "Overwrite conflicting files if necessary",
 			},
 		},
 	},

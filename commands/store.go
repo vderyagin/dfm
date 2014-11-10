@@ -1,10 +1,19 @@
 package commands
 
-import "github.com/codegangsta/cli"
+import (
+	"os"
+
+	"github.com/codegangsta/cli"
+	"github.com/vderyagin/dfm/fsutil"
+)
 
 // Store stores and links back given files.
 func Store(c *cli.Context) {
 	for _, df := range ArgDotFiles(c) {
+		if c.Bool("force") && fsutil.IsRegularFile(df.OriginalLocation) {
+			os.RemoveAll(df.StoredLocation)
+		}
+
 		logger := Logger(c, df)
 
 		if df.IsLinked() {

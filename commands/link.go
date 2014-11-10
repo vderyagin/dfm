@@ -1,6 +1,11 @@
 package commands
 
-import "github.com/codegangsta/cli"
+import (
+	"os"
+
+	"github.com/codegangsta/cli"
+	"github.com/vderyagin/dfm/fsutil"
+)
 
 // Link links all stored dotfiles to their respective places in home
 // directory.
@@ -8,6 +13,10 @@ func Link(c *cli.Context) {
 	for _, df := range Repo(c).StoredDotFiles() {
 		if df.IsLinked() {
 			continue
+		}
+
+		if c.Bool("force") && fsutil.IsRegularFile(df.StoredLocation) {
+			os.RemoveAll(df.OriginalLocation)
 		}
 
 		logger := Logger(c, df)
