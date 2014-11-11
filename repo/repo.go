@@ -3,6 +3,7 @@ package repo
 import (
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -84,11 +85,25 @@ func (r *Repo) StoredFilePath(orig string, hostSpecific bool) (string, error) {
 	relPath, err := filepath.Rel(r.Home, orig)
 
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	if !strings.HasPrefix(relPath, ".") {
 		return "", fmt.Errorf("%s is not a dotfile", orig)
+	}
+
+	stat, err := os.Lstat(orig)
+
+	if err == nil && stat.Mode()&os.ModeSymlink == os.ModeSymlink {
+		if st, err := os.Readlink(orig); err == nil {
+			if !filepath.IsAbs(st) {
+				st = filepath.Join(filepath.Dir(orig), st)
+			}
+
+			if strings.HasSuffix(st, host.DotFileSuffix()) {
+				return st, nil
+			}
+		}
 	}
 
 	storedRelPath := strings.TrimPrefix(relPath, ".")

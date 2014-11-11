@@ -1,6 +1,7 @@
 package repo_test
 
 import (
+	"os"
 	"path/filepath"
 
 	. "github.com/vderyagin/dfm/repo"
@@ -185,11 +186,39 @@ var _ = Describe("Repo", func() {
 		Context("host-specific dotfiles", func() {
 			ExecuteEachWithHostName("myhost")
 
-			It("returns name with host-specific suffix", func() {
+			It("returns name with host-specific suffix when requested", func() {
 				df, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), true)
 
 				Expect(err).To(Succeed())
 				Expect(df).To(HaveSuffix(".host-myhost"))
+			})
+
+			Context("original file is a link", func() {
+				ExecuteEachInTempDir()
+
+				It("returns file path specific to current host, if linked", func() {
+					repo := New(".", ".")
+					CreateFile("foo.host-myhost")
+					os.Symlink("foo.host-myhost", ".foo")
+
+					stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".foo"), false)
+
+					Expect(err).To(Succeed())
+					Expect(stored).To(HaveSuffix(".host-myhost"))
+				})
+
+				It("returns generic file path if linked to file specific to other host", func() {
+					repo := New(".", ".")
+					CreateFile("foo.host-otherhost")
+					os.Symlink("foo.host-otherhost", ".foo")
+
+					stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".foo"), false)
+
+					Expect(err).To(Succeed())
+					Expect(stored).NotTo(HaveSuffix(".host-myhost"))
+					Expect(stored).NotTo(HaveSuffix(".host-otherhost"))
+					Expect(stored).To(HaveSuffix("/foo"))
+				})
 			})
 		})
 	})
