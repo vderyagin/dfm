@@ -46,19 +46,13 @@ func (df *DotFile) IsLinked() bool {
 		return false
 	}
 
-	origInfo, err := os.Lstat(df.OriginalLocation)
-
-	if err != nil {
+	if !fsutil.IsSymlink(df.OriginalLocation) {
 		return false
 	}
 
 	origLinkTargetInfo, err := os.Stat(df.OriginalLocation)
 
 	if err != nil {
-		return false
-	}
-
-	if origInfo.Mode()&os.ModeSymlink != os.ModeSymlink {
 		return false
 	}
 

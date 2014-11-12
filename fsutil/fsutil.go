@@ -80,3 +80,14 @@ func IsRegularFile(path string) bool {
 
 	return fi.Mode().IsRegular()
 }
+
+// IsSymlink determines whether given path corresponds to a symbolic link.
+func IsSymlink(path string) bool {
+	if fi, err := os.Lstat(path); err != nil {
+		return false
+	} else if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
+		return true
+	}
+
+	return false
+}

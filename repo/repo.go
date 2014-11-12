@@ -92,17 +92,14 @@ func (r *Repo) StoredFilePath(orig string, hostSpecific bool) (string, error) {
 		return "", fmt.Errorf("%s is not a dotfile", orig)
 	}
 
-	stat, err := os.Lstat(orig)
+	// Handle case when file is host-local and already linked.
+	if st, err := os.Readlink(orig); err == nil {
+		if !filepath.IsAbs(st) {
+			st = filepath.Join(filepath.Dir(orig), st)
+		}
 
-	if err == nil && stat.Mode()&os.ModeSymlink == os.ModeSymlink {
-		if st, err := os.Readlink(orig); err == nil {
-			if !filepath.IsAbs(st) {
-				st = filepath.Join(filepath.Dir(orig), st)
-			}
-
-			if strings.HasSuffix(st, host.DotFileSuffix()) {
-				return st, nil
-			}
+		if strings.HasSuffix(st, host.DotFileSuffix()) {
+			return st, nil
 		}
 	}
 

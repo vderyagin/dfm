@@ -111,4 +111,49 @@ var _ = Describe("FSutil", func() {
 			Expect(Exists("a_symlink")).To(BeTrue())
 		})
 	})
+
+	Describe("IsRegularFile", func() {
+		It("returns true for regular file", func() {
+			CreateFile("foo/bar")
+			Expect(IsRegularFile("foo/bar")).To(BeTrue())
+		})
+
+		It("returns false when file does not exist", func() {
+			Expect(IsRegularFile("foo")).To(BeFalse())
+		})
+
+		It("returns false for directories", func() {
+			CreateDir("foo")
+			Expect(IsRegularFile("foo")).To(BeFalse())
+		})
+	})
+
+	Describe("IsSymlink", func() {
+		It("returns true for symlink", func() {
+			CreateFile("foo")
+			os.Symlink("foo", "bar")
+
+			Expect(IsSymlink("bar")).To(BeTrue())
+		})
+
+		It("returns true for dangling symlink", func() {
+			CreateFile("foo")
+			os.Symlink("foo", "bar")
+			os.Remove("foo")
+
+			Expect(IsSymlink("bar")).To(BeTrue())
+		})
+
+		It("returns false for plain files", func() {
+			CreateFile("foo")
+
+			Expect(IsSymlink("foo")).To(BeFalse())
+		})
+
+		It("returns false for directories", func() {
+			CreateDir("foo")
+
+			Expect(IsSymlink("foo")).To(BeFalse())
+		})
+	})
 })
