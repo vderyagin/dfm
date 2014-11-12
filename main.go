@@ -24,7 +24,7 @@ var appFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:   "home",
 		Value:  homeDir(),
-		Usage:  "Home directory",
+		Usage:  "home directory",
 		EnvVar: "DOTFILES_HOME_DIR",
 	},
 	cli.StringFlag{
@@ -50,11 +50,11 @@ var appCommands = []cli.Command{
 		Flags: []cli.Flag{
 			cli.BoolFlag{
 				Name:  "force",
-				Usage: "Overwrite conflicting files if necessary",
+				Usage: "overwrite conflicting files if necessary",
 			},
 			cli.BoolFlag{
 				Name:  "host",
-				Usage: "Store for this host only (hosts are distinguished by hostnames)",
+				Usage: "store for this host only (hosts are distinguished by hostnames)",
 			},
 		},
 	},
@@ -71,7 +71,7 @@ var appCommands = []cli.Command{
 		Flags: []cli.Flag{
 			cli.BoolFlag{
 				Name:  "force",
-				Usage: "Overwrite conflicting files if necessary",
+				Usage: "overwrite conflicting files if necessary",
 			},
 		},
 	},
