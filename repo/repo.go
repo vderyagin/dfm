@@ -98,7 +98,7 @@ func (r *Repo) StoredFilePath(orig string, hostSpecific bool) (string, error) {
 			st = filepath.Join(filepath.Dir(orig), st)
 		}
 
-		if strings.HasSuffix(st, host.DotFileSuffix()) {
+		if strings.HasSuffix(st, host.DotFileLocalSuffix()) {
 			return st, nil
 		}
 	}
@@ -106,7 +106,7 @@ func (r *Repo) StoredFilePath(orig string, hostSpecific bool) (string, error) {
 	storedRelPath := strings.TrimPrefix(relPath, ".")
 
 	if hostSpecific {
-		storedRelPath += host.DotFileSuffix()
+		storedRelPath += host.DotFileLocalSuffix()
 	}
 
 	return filepath.Join(r.Store, storedRelPath), nil

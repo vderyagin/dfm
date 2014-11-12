@@ -22,8 +22,8 @@ func Name() string {
 	return name
 }
 
-// DotFileSuffix returns a suffix to be added to host-specific dotfiles' paths.
-func DotFileSuffix() string {
+// DotFileLocalSuffix returns a suffix to be added to host-specific dotfiles' paths.
+func DotFileLocalSuffix() string {
 	return ".host-" + Name()
 }
 

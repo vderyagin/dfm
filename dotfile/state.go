@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// States DotFile can be in
+// States DotFile can be in.
 var (
 	Linked    = State("linked")
 	NotLinked = State("not linked")
@@ -13,10 +13,10 @@ var (
 	Missing   = State("missing")
 )
 
-// State represents current state of DotFile
+// State represents current state of DotFile.
 type State string
 
-// String regurns strig representation o State
+// String regurns string representation o State.
 func (s State) String() string {
 	return string(s)
 }

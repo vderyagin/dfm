@@ -13,7 +13,7 @@ import (
 	"github.com/vderyagin/dfm/repo"
 )
 
-// Repo returns a repo.Repo object based on command line arguments
+// Repo returns a repo.Repo object based on command line arguments.
 func Repo(c *cli.Context) *repo.Repo {
 	return repo.New(
 		c.GlobalString("store"),
@@ -21,7 +21,7 @@ func Repo(c *cli.Context) *repo.Repo {
 	)
 }
 
-// EnsureArgsPresent fails if no command line arguments provided
+// EnsureArgsPresent fails loudly if no command line arguments provided.
 func EnsureArgsPresent(c *cli.Context) {
 	if !c.Args().Present() {
 		fmt.Fprintln(os.Stderr, "No arguments provided")
@@ -29,8 +29,8 @@ func EnsureArgsPresent(c *cli.Context) {
 	}
 }
 
-// ArgDotFiles returns a collection of DotFile objects made from command line
-// arguments
+// ArgDotFiles returns a collection of DotFile objects constructed according
+// to provided command line arguments.
 func ArgDotFiles(c *cli.Context) []*dotfile.DotFile {
 	EnsureArgsPresent(c)
 
@@ -54,7 +54,7 @@ func ArgDotFiles(c *cli.Context) []*dotfile.DotFile {
 	return dotfiles
 }
 
-// Logger returns a Logger for given dotfile.
+// Logger returns a Logger object for given dotfile.
 func Logger(c *cli.Context, df *dotfile.DotFile) *logger.Logger {
 	repo := Repo(c)
 	id, _ := filepath.Rel(repo.Store, df.StoredLocation)

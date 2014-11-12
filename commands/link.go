@@ -4,10 +4,9 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/vderyagin/dfm/fsutil"
 )
 
-// Link links all stored dotfiles to their respective places in home
+// Link links all stored dotfiles to their respective locations in home
 // directory.
 func Link(c *cli.Context) {
 	for _, df := range Repo(c).StoredDotFiles() {
@@ -15,7 +14,7 @@ func Link(c *cli.Context) {
 			continue
 		}
 
-		if c.Bool("force") && fsutil.IsRegularFile(df.StoredLocation) {
+		if c.Bool("force") && df.IsStored() {
 			os.RemoveAll(df.OriginalLocation)
 		}
 

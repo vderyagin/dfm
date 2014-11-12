@@ -7,7 +7,7 @@ import (
 	"github.com/codegangsta/cli"
 )
 
-// List displays a list of stored dotfiles.
+// List displays a list of stored dotfiles and their states.
 func List(c *cli.Context) {
 	for _, df := range Repo(c).StoredDotFiles() {
 		id, _ := filepath.Rel(Repo(c).Store, df.StoredLocation)

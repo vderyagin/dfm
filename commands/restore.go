@@ -2,7 +2,8 @@ package commands
 
 import "github.com/codegangsta/cli"
 
-// Restore moves file from store back to its original location.
+// Restore moves dotfiles from store back to its original location, makes
+// sense only for linked files.
 func Restore(c *cli.Context) {
 	for _, df := range ArgDotFiles(c) {
 		logger := Logger(c, df)

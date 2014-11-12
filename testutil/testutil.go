@@ -53,14 +53,14 @@ func ExecuteEachWithHostName(hostName string) {
 	})
 }
 
-// CreateDir creates a directory at a given path, also creating it's parent
-// directories if needed. Loudly fails if anything goes wrong.
+// CreateDir creates an empty directory at a given path, also creating it's
+// parent directories if needed. Loudly fails if anything goes wrong.
 func CreateDir(path string) {
 	os.MkdirAll(path, 0777)
 }
 
-// CreateFile creates an empty file at a given path, also creating it's parent
-// directories if needed. Loudly fails if anything goes wrong.
+// CreateFile creates an empty regular file at a given path, also creating
+// it's parent directories if needed. Loudly fails if anything goes wrong.
 func CreateFile(path string) {
 	CreateDir(filepath.Dir(path))
 	ioutil.WriteFile(path, []byte{}, 0777)

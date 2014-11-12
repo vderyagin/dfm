@@ -5,7 +5,8 @@ import (
 	"github.com/vderyagin/dfm/fsutil"
 )
 
-// Delete removes both stored file and it's symlink.
+// Delete removes both stored file and it's symlink, works for properly linked
+// files only.
 func Delete(c *cli.Context) {
 	for _, df := range ArgDotFiles(c) {
 		logger := Logger(c, df)

@@ -35,8 +35,7 @@ func New(stored, original string) *DotFile {
 
 // IsStored returns true if given dotfile is stored.
 func (df *DotFile) IsStored() bool {
-	storedInfo, err := os.Lstat(df.StoredLocation)
-	return err == nil && storedInfo.Mode().IsRegular()
+	return fsutil.IsRegularFile(df.StoredLocation)
 }
 
 // IsLinked returns true if file is stored and linked to it's original
@@ -81,14 +80,14 @@ func (df *DotFile) IsReadyToBeStored() bool {
 	return true
 }
 
-// Store puts file in storage and links it back from there.
+// Store puts file in storage and links to it from original location.
 func (df *DotFile) Store() error {
 	if df.IsLinked() {
 		return errors.New("is stored and linked already")
 	}
 
 	if !df.IsReadyToBeStored() {
-		return errors.New("can not store")
+		return errors.New("can not be stored")
 	}
 
 	if err := os.MkdirAll(filepath.Dir(df.StoredLocation), 0777); err != nil {
@@ -181,7 +180,7 @@ func (df *DotFile) Delete() error {
 // IsFromThisHost returns true if dotfile is specific to current host, false
 // otherwise.
 func (df *DotFile) IsFromThisHost() bool {
-	return strings.HasSuffix(df.StoredLocation, host.DotFileSuffix())
+	return strings.HasSuffix(df.StoredLocation, host.DotFileLocalSuffix())
 }
 
 // IsGeneric returns true if dotfile is not specific to any host, false
