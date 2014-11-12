@@ -53,7 +53,7 @@ var appCommands = []cli.Command{
 				Usage: "overwrite conflicting files if necessary",
 			},
 			cli.BoolFlag{
-				Name:  "host",
+				Name:  "host-specific",
 				Usage: "store for this host only (hosts are distinguished by hostnames)",
 			},
 		},
