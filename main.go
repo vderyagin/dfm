@@ -29,7 +29,7 @@ var appFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:   "store",
-		Value:  filepath.Join(homeDir(), "dotfiles-test"),
+		Value:  filepath.Join(homeDir(), ".dotfiles"),
 		Usage:  "directory files will be stored in",
 		EnvVar: "DOTFILES_STORE_DIR",
 	},
