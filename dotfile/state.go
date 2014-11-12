@@ -41,13 +41,13 @@ func (s *State) ColorString() string {
 
 	switch *s {
 	case Linked:
-		formatStr = " \x1b[1;32m%s\x1b[0m " // green bold
+		formatStr = "\x1b[1;32m %s \x1b[0m" // green bold
 	case NotLinked:
-		formatStr = " \x1b[1;33m%s\x1b[0m " // yellow bold
+		formatStr = "\x1b[1;33m %s \x1b[0m" // yellow bold
 	case Conflict:
-		formatStr = " \x1b[1;31m%s\x1b[0m " // red bold
+		formatStr = "\x1b[1;31m %s \x1b[0m" // red bold
 	case Missing:
-		formatStr = " \x1b[1;7;31m%s\x1b[0m " // red bold inverted
+		formatStr = "\x1b[1;7;31m %s \x1b[0m" // red bold inverted
 	}
 
 	return fmt.Sprintf(formatStr, *s)
