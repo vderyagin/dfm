@@ -1,10 +1,6 @@
 package logger
 
-import (
-	"fmt"
-
-	"github.com/mgutz/ansi"
-)
+import "fmt"
 
 // Logger logs performed DotFile actions
 type Logger string
@@ -17,17 +13,17 @@ func New(id string) *Logger {
 
 // Success logs successful action
 func (l *Logger) Success(msg string) {
-	fmt.Printf("%s: %s\n", ansi.Color(msg, "green+b"), l)
+	fmt.Printf("\x1b[1;32m%s\x1b[0m: %s\n", msg, l)
 }
 
 // Fail logs successful action
 func (l *Logger) Fail(msg, reason string) {
-	fmt.Printf("%s: %s\n\t(%s)\n", ansi.Color(msg, "red+b"), l, reason)
+	fmt.Printf("\x1b[1;31%s\x1b[0m: %s\n\t(%s)\n", msg, l, reason)
 }
 
 // Skip logs skipped action
 func (l *Logger) Skip(msg, reason string) {
-	fmt.Printf("%s: %s\n\t(%s)\n", ansi.Color(msg, "yellow+b"), l, reason)
+	fmt.Printf("\x1b[1;33%s\x1b[0m: %s\n\t(%s)\n", msg, l, reason)
 }
 
 // String representation of logger

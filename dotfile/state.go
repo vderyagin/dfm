@@ -3,8 +3,6 @@ package dotfile
 import (
 	"fmt"
 	"os"
-
-	"github.com/mgutz/ansi"
 )
 
 // States DotFile can be in
@@ -39,18 +37,18 @@ func (df *DotFile) CurrentState() *State {
 
 // ColorString generates ansi-colored representation of given State object.
 func (s *State) ColorString() string {
-	var style string
+	var formatStr string
 
 	switch *s {
 	case Linked:
-		style = "green+b"
+		formatStr = " \x1b[1;32m%s\x1b[0m " // green bold
 	case NotLinked:
-		style = "yellow+b"
+		formatStr = " \x1b[1;33m%s\x1b[0m " // yellow bold
 	case Conflict:
-		style = "red+b"
+		formatStr = " \x1b[1;31m%s\x1b[0m " // red bold
 	case Missing:
-		style = "red+bi"
+		formatStr = " \x1b[1;7;31m%s\x1b[0m " // red bold inverted
 	}
 
-	return ansi.Color(fmt.Sprintf(" %s ", *s), style)
+	return fmt.Sprintf(formatStr, *s)
 }
