@@ -4,12 +4,23 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/vderyagin/dfm/dotfile"
 	. "github.com/vderyagin/dfm/repo"
 	. "github.com/vderyagin/dfm/testutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+func chanToSlice(input <-chan *dotfile.DotFile) []*dotfile.DotFile {
+	output := []*dotfile.DotFile{}
+
+	for f := range input {
+		output = append(output, f)
+	}
+
+	return output
+}
 
 var _ = Describe("Repo", func() {
 	Describe("New", func() {
@@ -35,7 +46,7 @@ var _ = Describe("Repo", func() {
 
 			repo := New(absPath, ".")
 
-			Expect(repo.StoredDotFiles()).To(BeEmpty())
+			Expect(chanToSlice(repo.StoredDotFiles())).To(BeEmpty())
 		})
 
 		It("returns collection including dotfile objects", func() {
@@ -44,7 +55,7 @@ var _ = Describe("Repo", func() {
 			repoPath, _ := filepath.Abs(".")
 
 			repo := New(repoPath, ".")
-			dotfiles := repo.StoredDotFiles()
+			dotfiles := chanToSlice(repo.StoredDotFiles())
 
 			Expect(dotfiles).To(HaveLen(1))
 			Expect(dotfiles[0].StoredLocation).To(Equal(storedPath))
@@ -57,7 +68,7 @@ var _ = Describe("Repo", func() {
 			repoPath, _ := filepath.Abs(".")
 
 			repo := New(repoPath, ".")
-			dotfiles := repo.StoredDotFiles()
+			dotfiles := chanToSlice(repo.StoredDotFiles())
 
 			Expect(dotfiles).To(HaveLen(1))
 			Expect(dotfiles[0].StoredLocation).To(Equal(storedPath))
@@ -68,7 +79,7 @@ var _ = Describe("Repo", func() {
 			CreateFile("foo")
 			CreateFile("bar")
 
-			Expect(repo.StoredDotFiles()).To(HaveLen(2))
+			Expect(chanToSlice(repo.StoredDotFiles())).To(HaveLen(2))
 		})
 
 		Context("host-specific dotfiles", func() {
@@ -80,7 +91,7 @@ var _ = Describe("Repo", func() {
 				CreateFile("bashrc.host-myhost")
 				CreateFile("bashrc.host-otherhost")
 
-				Expect(repo.StoredDotFiles()).To(HaveLen(1))
+				Expect(chanToSlice(repo.StoredDotFiles())).To(HaveLen(1))
 			})
 
 			It("ignores all dotfiles specific to other hosts", func() {
@@ -88,7 +99,7 @@ var _ = Describe("Repo", func() {
 				CreateFile("bashrc.host-otherhost")
 				CreateFile("bashrc.host-stillotherhost")
 
-				Expect(repo.StoredDotFiles()).To(BeEmpty())
+				Expect(chanToSlice(repo.StoredDotFiles())).To(BeEmpty())
 			})
 
 			It("favors files specific to current host over files from other host", func() {
@@ -97,7 +108,7 @@ var _ = Describe("Repo", func() {
 				CreateFile("bashrc.host-otherhost")
 
 				expected, _ := filepath.Abs("bashrc.host-myhost")
-				dotfiles := repo.StoredDotFiles()
+				dotfiles := chanToSlice(repo.StoredDotFiles())
 				Expect(dotfiles).To(HaveLen(1))
 				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
 			})
@@ -108,7 +119,7 @@ var _ = Describe("Repo", func() {
 				CreateFile("bashrc.host-myhost")
 
 				expected, _ := filepath.Abs("bashrc.host-myhost")
-				dotfiles := repo.StoredDotFiles()
+				dotfiles := chanToSlice(repo.StoredDotFiles())
 				Expect(dotfiles).To(HaveLen(1))
 				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
 			})
@@ -119,7 +130,7 @@ var _ = Describe("Repo", func() {
 				CreateFile("bashrc.host-otherhost")
 
 				expected, _ := filepath.Abs("bashrc")
-				dotfiles := repo.StoredDotFiles()
+				dotfiles := chanToSlice(repo.StoredDotFiles())
 				Expect(dotfiles).To(HaveLen(1))
 				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
 			})

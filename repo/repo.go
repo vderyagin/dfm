@@ -36,33 +36,30 @@ func New(store, home string) *Repo {
 	}
 }
 
-// StoredDotFiles returns a collection, containing DotFile object for each
-// stored dotfile.
-func (r *Repo) StoredDotFiles() []*dotfile.DotFile {
-	// Populate map indexed by dotfile original path to be able to weed out
-	// conflicts - multiple dotfiles attempting to be linked from the same path
-	// in home directory.
-	dfMap := make(map[string]*dotfile.DotFile)
+// StoredDotFiles returns a channel producing DotFile objects for every stored
+// dotfile.
+func (r *Repo) StoredDotFiles() <-chan *dotfile.DotFile {
+	dotFileChan := make(chan *dotfile.DotFile)
 
-	for file := range fsutil.FilesIn(r.Store) {
-		df := dotfile.DotFile{
-			StoredLocation:   file,
-			OriginalLocation: r.OriginalFilePath(file),
+	go func(c chan<- *dotfile.DotFile) {
+		for file := range fsutil.FilesIn(r.Store) {
+			df := dotfile.DotFile{
+				StoredLocation:   file,
+				OriginalLocation: r.OriginalFilePath(file),
+			}
+
+			// is it generic file without conflicting host-specific one?
+			noConflict := df.IsGeneric() && !fsutil.Exists(df.StoredLocation+host.DotFileLocalSuffix())
+
+			if df.IsFromThisHost() || noConflict {
+				c <- &df
+			}
 		}
 
-		if _, clash := dfMap[df.OriginalLocation]; !clash && df.IsGeneric() || df.IsFromThisHost() {
-			dfMap[df.OriginalLocation] = &df
-		}
-	}
+		close(c)
+	}(dotFileChan)
 
-	// Collect values from map into slice and return it.
-	var dotfiles []*dotfile.DotFile
-
-	for _, df := range dfMap {
-		dotfiles = append(dotfiles, df)
-	}
-
-	return dotfiles
+	return dotFileChan
 }
 
 // OriginalFilePath computes original path of dotfile (where it should be

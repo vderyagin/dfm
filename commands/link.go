@@ -9,7 +9,7 @@ import (
 // Link links all stored dotfiles to their respective locations in home
 // directory.
 func Link(c *cli.Context) {
-	for _, df := range Repo(c).StoredDotFiles() {
+	for df := range Repo(c).StoredDotFiles() {
 		if df.IsLinked() {
 			continue
 		}
