@@ -11,40 +11,49 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+func chanToSlice(input <-chan string) []string {
+	output := []string{}
+
+	for s := range input {
+		output = append(output, s)
+	}
+
+	return output
+}
+
 var _ = Describe("FSutil", func() {
 	ExecuteEachInTempDir()
-
 	Describe("FilesIn", func() {
-		It("returns empty collection if argument does not exist", func() {
-			Expect(FilesIn("nonexistent_dir")).To(BeEmpty())
+		It("returns empty closed channel if argument does not exist", func() {
+			Expect(chanToSlice(FilesIn("nonexistent_dir"))).To(BeEmpty())
 		})
 
-		It("returns empty collection for empty directory", func() {
-			Expect(FilesIn(".")).To(BeEmpty())
+		It("returns empty closed channel for empty directory", func() {
+			Expect(chanToSlice(FilesIn("."))).To(BeEmpty())
 		})
 
-		It("returns empty collection for directory with hidden files", func() {
+		It("returns empty closed channel for directory with hidden files", func() {
 			CreateFile(".hidden")
 			CreateFile(".foo/bar/baz")
 
-			Expect(FilesIn(".")).To(BeEmpty())
+			Expect(chanToSlice(FilesIn("."))).To(BeEmpty())
 		})
 
-		It("returns collection including regular non-hidden files", func() {
+		It("returns channel producing regular non-hidden files", func() {
 			baseName := "bashrc"
 			absPath, _ := filepath.Abs(baseName)
 			CreateFile(baseName)
 
-			Expect(FilesIn(".")).To(ContainElement(absPath))
+			Expect(chanToSlice(FilesIn("."))).To(ContainElement(absPath))
 		})
 
-		It("returns collection including deeply nested files", func() {
+		It("returns channel producing deeply nested files", func() {
 			relPath := "config/camlistore/server-config.json"
 			absPath, _ := filepath.Abs(relPath)
 			CreateDir(filepath.Dir(absPath))
 			CreateFile(relPath)
 
-			Expect(FilesIn(".")).To(ContainElement(absPath))
+			Expect(chanToSlice(FilesIn("."))).To(ContainElement(absPath))
 		})
 	})
 

@@ -44,7 +44,7 @@ func (r *Repo) StoredDotFiles() []*dotfile.DotFile {
 	// in home directory.
 	dfMap := make(map[string]*dotfile.DotFile)
 
-	for _, file := range fsutil.FilesIn(r.Store) {
+	for file := range fsutil.FilesIn(r.Store) {
 		df := dotfile.DotFile{
 			StoredLocation:   file,
 			OriginalLocation: r.OriginalFilePath(file),

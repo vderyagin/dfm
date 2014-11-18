@@ -7,10 +7,9 @@ import (
 	"strings"
 )
 
-// FilesIn returns a collection of absolute paths of files in dir. Returns
-// empty collection if provided argument is not a valid directory.
-func FilesIn(dir string) []string {
-	var files []string
+// FilesIn returns a channel that produces absolute path of files in dir.
+func FilesIn(dir string) <-chan string {
+	fileChan := make(chan string)
 
 	dir, err := filepath.Abs(dir)
 
@@ -18,24 +17,29 @@ func FilesIn(dir string) []string {
 		log.Fatal(err)
 	}
 
-	filepath.Walk(dir, func(path string, fi os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	go func(c chan<- string) {
+		filepath.Walk(dir, func(path string, fi os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 
-		if !fi.Mode().IsRegular() {
+			if !fi.Mode().IsRegular() {
+				return nil
+			}
+
+			if relPath, _ := filepath.Rel(dir, path); strings.HasPrefix(relPath, ".") {
+				return nil
+			}
+
+			c <- path
+
 			return nil
-		}
+		})
 
-		if relPath, _ := filepath.Rel(dir, path); strings.HasPrefix(relPath, ".") {
-			return nil
-		}
+		close(c)
+	}(fileChan)
 
-		files = append(files, path)
-		return nil
-	})
-
-	return files
+	return fileChan
 }
 
 // IsEmptyDir determines whether given path corresponds to an empty directory.
