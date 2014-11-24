@@ -119,6 +119,13 @@ var _ = Describe("Dotfile", func() {
 	})
 
 	Describe("Store", func() {
+		It("returns SkipError if file is already stored and linked", func() {
+			CreateFile(orig())
+			df().Store()
+
+			Expect(df().Store()).To(BeAssignableToTypeOf(SkipError("")))
+		})
+
 		It("stores file", func() {
 			CreateFile(orig())
 
@@ -186,6 +193,12 @@ var _ = Describe("Dotfile", func() {
 	})
 
 	Describe("Restore", func() {
+		It("returns SkipError if file was not stored at all", func() {
+			CreateFile(orig())
+
+			Expect(df().Restore()).To(BeAssignableToTypeOf(SkipError("")))
+		})
+
 		It("restores the file in its original place", func() {
 			CreateFile(stored())
 			df().Link()
@@ -212,7 +225,7 @@ var _ = Describe("Dotfile", func() {
 			Expect(df.IsReadyToBeStored()).To(BeTrue())
 		})
 
-		It("fails if file is not stored and linked properly", func() {
+		It("fails if file exists, but not stored and linked properly", func() {
 			CreateFile(stored())
 			Expect(df().Restore()).NotTo(Succeed())
 		})
@@ -247,8 +260,13 @@ var _ = Describe("Dotfile", func() {
 			Expect(Exists(".config")).To(BeFalse())
 		})
 
-		It("fails if file is not stored and linked properly", func() {
+		It("fails if some file exists, but not stored and linked properly", func() {
+			CreateFile(stored())
 			Expect(df().Delete()).NotTo(Succeed())
+		})
+
+		It("returns SkipError if files don't exist at all", func() {
+			Expect(df().Delete()).To(BeAssignableToTypeOf(SkipError("")))
 		})
 	})
 

@@ -83,23 +83,23 @@ func (df *DotFile) IsReadyToBeStored() bool {
 // Store puts file in storage and links to it from original location.
 func (df *DotFile) Store() error {
 	if df.IsLinked() {
-		return errors.New("is stored and linked already")
+		return SkipError("is stored and linked already")
 	}
 
 	if !df.IsReadyToBeStored() {
-		return errors.New("can not be stored")
+		return FailError("can not be stored")
 	}
 
 	if err := os.MkdirAll(filepath.Dir(df.StoredLocation), 0777); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	if err := os.Rename(df.OriginalLocation, df.StoredLocation); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	if err := os.Symlink(df.StoredLocation, df.OriginalLocation); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	return nil
@@ -132,20 +132,24 @@ func (df *DotFile) Link() error {
 
 // Restore moves stored file back into its original location, replacing symlink.
 func (df *DotFile) Restore() error {
+	if df.IsReadyToBeStored() {
+		return SkipError("not stored to begin with")
+	}
+
 	if !df.IsLinked() {
-		return errors.New("can restore only properly linked files")
+		return FailError("can restore only properly linked files")
 	}
 
 	if err := os.Remove(df.OriginalLocation); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	if err := os.Rename(df.StoredLocation, df.OriginalLocation); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	return nil
@@ -154,24 +158,28 @@ func (df *DotFile) Restore() error {
 // Delete removes stored file and link to it from home dir, fails if file is
 // not linked properly.
 func (df *DotFile) Delete() error {
+	if !(fsutil.Exists(df.OriginalLocation) || fsutil.Exists(df.StoredLocation)) {
+		return SkipError("does not exist")
+	}
+
 	if !df.IsLinked() {
-		return errors.New("can delete only properly linked files")
+		return FailError("can delete only properly linked files")
 	}
 
 	if err := os.Remove(df.StoredLocation); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	if err := os.Remove(df.OriginalLocation); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.OriginalLocation)); err != nil {
-		return err
+		return FailError(err.Error())
 	}
 
 	return nil
