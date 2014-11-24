@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"log"
+
 	"github.com/codegangsta/cli"
-	"github.com/vderyagin/dfm/fsutil"
+	"github.com/vderyagin/dfm/dotfile"
 )
 
 // Delete removes both stored file and it's symlink, works for properly linked
@@ -11,12 +13,15 @@ func Delete(c *cli.Context) {
 	for _, df := range ArgDotFiles(c) {
 		logger := Logger(c, df)
 
-		if !(fsutil.Exists(df.OriginalLocation) || fsutil.Exists(df.StoredLocation)) {
-			logger.Skip("skipped deleting", "does not exist")
-		} else if err := df.Delete(); err == nil {
+		switch err := df.Delete().(type) {
+		case nil:
 			logger.Success("deleted")
-		} else {
+		case dotfile.SkipError:
+			logger.Skip("skipped deleting", err.Error())
+		case dotfile.FailError:
 			logger.Fail("failed to delete", err.Error())
+		default:
+			log.Fatalf("error of unknown type: %v", err)
 		}
 	}
 }

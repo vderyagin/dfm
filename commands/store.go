@@ -1,9 +1,11 @@
 package commands
 
 import (
+	"log"
 	"os"
 
 	"github.com/codegangsta/cli"
+	"github.com/vderyagin/dfm/dotfile"
 	"github.com/vderyagin/dfm/fsutil"
 )
 
@@ -16,12 +18,15 @@ func Store(c *cli.Context) {
 
 		logger := Logger(c, df)
 
-		if df.IsLinked() {
-			logger.Skip("skipped storing", "is already stored and linked")
-		} else if err := df.Store(); err == nil {
+		switch err := df.Store().(type) {
+		case nil:
 			logger.Success("stored")
-		} else {
+		case dotfile.SkipError:
+			logger.Skip("skipped storing", err.Error())
+		case dotfile.FailError:
 			logger.Fail("failed to store", err.Error())
+		default:
+			log.Fatalf("error of unknown type: %v", err)
 		}
 	}
 }
