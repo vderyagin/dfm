@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"log"
 	"os"
 
 	"github.com/codegangsta/cli"
@@ -23,10 +22,8 @@ func Store(c *cli.Context) {
 			logger.Success("stored")
 		case dotfile.SkipError:
 			logger.Skip("skipped storing", err.Error())
-		case dotfile.FailError:
-			logger.Fail("failed to store", err.Error())
 		default:
-			log.Fatalf("error of unknown type: %v", err)
+			logger.Fail("failed to store", err.Error())
 		}
 	}
 }

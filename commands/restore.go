@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"log"
-
 	"github.com/codegangsta/cli"
 	"github.com/vderyagin/dfm/dotfile"
 )
@@ -18,10 +16,8 @@ func Restore(c *cli.Context) {
 			logger.Success("restored")
 		case dotfile.SkipError:
 			logger.Skip("skipped restoring", err.Error())
-		case dotfile.FailError:
-			logger.Fail("failed to restore", err.Error())
 		default:
-			log.Fatalf("error of unknown type: %v", err)
+			logger.Fail("failed to restore", err.Error())
 		}
 	}
 }

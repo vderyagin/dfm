@@ -11,6 +11,12 @@ import (
 	"github.com/vderyagin/dfm/host"
 )
 
+type SkipError string
+
+func (e SkipError) Error() string {
+	return string(e)
+}
+
 // DotFile type represents a single dotfile, defined by its storage and
 // linking location. If dotfile is stored, its StoredLocation corresponds to a
 // file within dotfiles repository and OriginalLocation - to symlink in user
@@ -87,19 +93,19 @@ func (df *DotFile) Store() error {
 	}
 
 	if !df.IsReadyToBeStored() {
-		return FailError("can not be stored")
+		return errors.New("can not be stored")
 	}
 
 	if err := os.MkdirAll(filepath.Dir(df.StoredLocation), 0777); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	if err := os.Rename(df.OriginalLocation, df.StoredLocation); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	if err := os.Symlink(df.StoredLocation, df.OriginalLocation); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	return nil
@@ -137,19 +143,19 @@ func (df *DotFile) Restore() error {
 	}
 
 	if !df.IsLinked() {
-		return FailError("can restore only properly linked files")
+		return errors.New("can restore only properly linked files")
 	}
 
 	if err := os.Remove(df.OriginalLocation); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	if err := os.Rename(df.StoredLocation, df.OriginalLocation); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	return nil
@@ -163,23 +169,23 @@ func (df *DotFile) Delete() error {
 	}
 
 	if !df.IsLinked() {
-		return FailError("can delete only properly linked files")
+		return errors.New("can delete only properly linked files")
 	}
 
 	if err := os.Remove(df.StoredLocation); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	if err := os.Remove(df.OriginalLocation); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.OriginalLocation)); err != nil {
-		return FailError(err.Error())
+		return err
 	}
 
 	return nil
