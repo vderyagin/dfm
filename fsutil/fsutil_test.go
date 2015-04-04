@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	. "github.com/vderyagin/dfm/fsutil"
-	. "github.com/vderyagin/dfm/testutil"
+	. "gitlab.com/vderyagin/dfm/fsutil"
+	. "gitlab.com/vderyagin/dfm/testutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

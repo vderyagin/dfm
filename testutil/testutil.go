@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/onsi/ginkgo"
-	"github.com/vderyagin/dfm/host"
+	"gitlab.com/vderyagin/dfm/host"
 )
 
 // ExecuteEachInTempDir makes Ginkgo run each test in given context in

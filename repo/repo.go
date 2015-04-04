@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vderyagin/dfm/dotfile"
-	"github.com/vderyagin/dfm/fsutil"
-	"github.com/vderyagin/dfm/host"
+	"gitlab.com/vderyagin/dfm/dotfile"
+	"gitlab.com/vderyagin/dfm/fsutil"
+	"gitlab.com/vderyagin/dfm/host"
 )
 
 // Repo represents a place where dotfiles are stored.

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/codegangsta/cli"
-	"github.com/vderyagin/dfm/commands"
+	"gitlab.com/vderyagin/dfm/commands"
 )
 
 func homeDir() string {

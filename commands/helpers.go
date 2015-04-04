@@ -8,9 +8,9 @@ import (
 
 	"github.com/codegangsta/cli"
 
-	"github.com/vderyagin/dfm/dotfile"
-	"github.com/vderyagin/dfm/logger"
-	"github.com/vderyagin/dfm/repo"
+	"gitlab.com/vderyagin/dfm/dotfile"
+	"gitlab.com/vderyagin/dfm/logger"
+	"gitlab.com/vderyagin/dfm/repo"
 )
 
 // Repo returns a repo.Repo object based on command line arguments.

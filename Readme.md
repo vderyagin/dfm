@@ -4,7 +4,7 @@
 
 - Have [Go](http://golang.org/doc/install) installed
 - Have your Go workspace configured (as per http://golang.org/doc/code.html#GOPATH)
-- `go get github.com/vderyagin/dfm`
+- `go get gitlab.com/vderyagin/dfm`
 
 ## Usage ##
 
