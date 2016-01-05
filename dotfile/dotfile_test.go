@@ -322,4 +322,55 @@ var _ = Describe("Dotfile", func() {
 			})
 		})
 	})
+
+	Describe("MustBeCopied", func() {
+		forceCopy := func() *DotFile {
+			s, _ := filepath.Abs("foo.force-copy")
+			o, _ := filepath.Abs(".foo")
+
+			return New(s, o)
+		}
+
+		forceCopyHostSpecificOne := func() *DotFile {
+			s, _ := filepath.Abs("foo.force-copy.host-foo")
+			o, _ := filepath.Abs(".foo")
+
+			return New(s, o)
+		}
+
+		forceCopyHostSpecificTwo := func() *DotFile {
+			s, _ := filepath.Abs("foo.host-foo.force-copy")
+			o, _ := filepath.Abs(".foo")
+
+			return New(s, o)
+		}
+
+		regular := func() *DotFile {
+			s, _ := filepath.Abs("foo")
+			o, _ := filepath.Abs(".foo")
+
+			return New(s, o)
+		}
+
+		hostSpecific := func() *DotFile {
+			s, _ := filepath.Abs("foo.host-foo")
+			o, _ := filepath.Abs(".foo")
+
+			return New(s, o)
+		}
+
+		It("returns true for force-copy files", func() {
+			Expect(forceCopy().MustBeCopied()).To(BeTrue())
+		})
+
+		It("returns true for host-specific force-copy files", func() {
+			Expect(forceCopyHostSpecificOne().MustBeCopied()).To(BeTrue())
+			Expect(forceCopyHostSpecificTwo().MustBeCopied()).To(BeTrue())
+		})
+
+		It("returns false for regulat dotfiles", func() {
+			Expect(regular().MustBeCopied()).To(BeFalse())
+			Expect(hostSpecific().MustBeCopied()).To(BeFalse())
+		})
+	})
 })

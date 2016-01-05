@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"gitlab.com/vderyagin/dfm/fsutil"
@@ -201,4 +202,10 @@ func (df *DotFile) IsFromThisHost() bool {
 // otherwise.
 func (df *DotFile) IsGeneric() bool {
 	return !host.PathRegexp.MatchString(df.StoredLocation)
+}
+
+// MustBeCopied returns true if dotfile can not be symlinked and must be
+// copied to appropriate place instead.
+func (df *DotFile) MustBeCopied() bool {
+	return regexp.MustCompile(`\.force-copy(\.|\z)`).MatchString(df.StoredLocation)
 }
