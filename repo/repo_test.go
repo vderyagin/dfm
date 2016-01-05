@@ -167,6 +167,27 @@ var _ = Describe("Repo", func() {
 				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
 			})
 		})
+
+		Context("dotfiles that must be copied, not symlinked", func() {
+			It("removes suffix makring files a such that must be copied", func() {
+				orig := repo.OriginalFilePath(filepath.Join(repo.Store, "bashrc.force-copy"))
+				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
+			})
+		})
+
+		Context("host-specific files that must be copied", func() {
+			It("removes both suffixes when host suffix is first", func() {
+				orig := repo.OriginalFilePath(filepath.Join(repo.Store,
+					"bashrc.host-foo.force-copy"))
+				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
+			})
+
+			It("removes both suffixes when force-copy one is first", func() {
+				orig := repo.OriginalFilePath(filepath.Join(repo.Store,
+					"bashrc.force-copy.host-foo"))
+				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
+			})
+		})
 	})
 
 	Describe("StoredFilePath", func() {

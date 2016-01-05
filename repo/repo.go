@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"gitlab.com/vderyagin/dfm/dotfile"
@@ -71,6 +72,7 @@ func (r *Repo) OriginalFilePath(stored string) string {
 		log.Fatal(err)
 	}
 
+	relPath = regexp.MustCompile(`\.force-copy`).ReplaceAllLiteralString(relPath, "")
 	relPath = host.RemoveSuffix(relPath)
 
 	return filepath.Join(r.Home, "."+relPath)
