@@ -1,6 +1,7 @@
 package dotfile
 
 import (
+	"bytes"
 	"errors"
 	"log"
 	"os"
@@ -50,6 +51,22 @@ func (df *DotFile) IsStored() bool {
 func (df *DotFile) IsLinked() bool {
 	if !df.IsStored() {
 		return false
+	}
+
+	if df.MustBeCopied() {
+		if !(fsutil.IsRegularFile(df.OriginalLocation) &&
+			fsutil.IsRegularFile(df.StoredLocation)) {
+			return false
+		}
+
+		originalMD5, err1 := fsutil.MD5(df.OriginalLocation)
+		storedMD5, err2 := fsutil.MD5(df.StoredLocation)
+
+		if err1 != nil || err2 != nil {
+			return false
+		}
+
+		return bytes.Compare(originalMD5, storedMD5) == 0
 	}
 
 	if !fsutil.IsSymlink(df.OriginalLocation) {

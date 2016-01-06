@@ -65,3 +65,11 @@ func CreateFile(path string) {
 	CreateDir(filepath.Dir(path))
 	ioutil.WriteFile(path, []byte{}, 0777)
 }
+
+// CreateFileWithContent creates a regular file at a given path with given
+// content, also creating it's parent directories if needed. Loudly fails if
+// anything goes wrong.
+func CreateFileWithContent(path string, content []byte) {
+	CreateDir(filepath.Dir(path))
+	ioutil.WriteFile(path, content, 0777)
+}

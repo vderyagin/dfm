@@ -91,6 +91,41 @@ var _ = Describe("Dotfile", func() {
 
 			Expect(df().IsLinked()).To(BeFalse())
 		})
+
+		Context("force-copy files", func() {
+			stored := func() string {
+				s, _ := filepath.Abs("foo.force-copy")
+				return s
+			}
+
+			orig := func() string {
+				o, _ := filepath.Abs(".foo")
+				return o
+			}
+
+			df := func() *DotFile {
+				return New(stored(), orig())
+			}
+
+			It("returns true if both files exist and are the same", func() {
+				CreateFileWithContent(stored(), []byte("foo"))
+				CreateFileWithContent(orig(), []byte("foo"))
+				Expect(df().IsLinked()).To(BeTrue())
+			})
+
+			It("returns false if both files exist but are not the same", func() {
+				CreateFileWithContent(stored(), []byte("foo"))
+				CreateFileWithContent(orig(), []byte("foobar"))
+				Expect(df().IsLinked()).To(BeFalse())
+			})
+
+			It("returns false if file is symlinked, not copied", func() {
+				CreateFile(stored())
+				os.Symlink(stored(), orig())
+
+				Expect(df().IsLinked()).To(BeFalse())
+			})
+		})
 	})
 
 	Describe("IsReadyToBeStored", func() {

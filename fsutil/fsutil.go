@@ -1,6 +1,8 @@
 package fsutil
 
 import (
+	"crypto/md5"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -94,4 +96,24 @@ func IsSymlink(path string) bool {
 	}
 
 	return false
+}
+
+// MD5 calculates MD5 hash of provided file.
+func MD5(path string) ([]byte, error) {
+	var result []byte
+	file, err := os.Open(path)
+
+	if err != nil {
+		return result, err
+	}
+
+	defer file.Close()
+
+	hash := md5.New()
+
+	if _, err := io.Copy(hash, file); err != nil {
+		return result, err
+	}
+
+	return hash.Sum(result), nil
 }
