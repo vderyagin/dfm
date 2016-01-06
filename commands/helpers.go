@@ -44,7 +44,7 @@ func ArgDotFiles(c *cli.Context) []*dotfile.DotFile {
 			log.Fatal(err)
 		}
 
-		if stored, err := repo.StoredFilePath(orig, c.Bool("host")); err != nil {
+		if stored, err := repo.StoredFilePath(orig, c.Bool("host-specific"), c.Bool("copy")); err != nil {
 			log.Fatal(err)
 		} else {
 			dotfiles[idx] = dotfile.New(stored, orig)

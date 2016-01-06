@@ -194,7 +194,7 @@ var _ = Describe("Repo", func() {
 		repo := New("/store", "/")
 
 		It("returns proper file name for simple case", func() {
-			stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), false)
+			stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), false, false)
 
 			Expect(err).To(Succeed())
 			Expect(stored).To(Equal(filepath.Join(repo.Store, "bashrc")))
@@ -202,14 +202,14 @@ var _ = Describe("Repo", func() {
 
 		It("returns proper file name for for deeply nested file", func() {
 			orig := filepath.Join(repo.Home, ".config/camlistore/server-config.json")
-			stored, err := repo.StoredFilePath(orig, false)
+			stored, err := repo.StoredFilePath(orig, false, false)
 
 			Expect(err).To(Succeed())
 			Expect(stored).To(Equal(filepath.Join(repo.Store, "config/camlistore/server-config.json")))
 		})
 
 		It("fails if path from home directory does not start with dot", func() {
-			df, err := repo.StoredFilePath(filepath.Join(repo.Home, "bashrc"), false)
+			df, err := repo.StoredFilePath(filepath.Join(repo.Home, "bashrc"), false, false)
 
 			Expect(df).To(BeEmpty())
 			Expect(err).NotTo(Succeed())
@@ -219,7 +219,7 @@ var _ = Describe("Repo", func() {
 			ExecuteEachWithHostName("myhost")
 
 			It("returns name with host-specific suffix when requested", func() {
-				df, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), true)
+				df, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), true, false)
 
 				Expect(err).To(Succeed())
 				Expect(df).To(HaveSuffix(".host-myhost"))
@@ -233,7 +233,7 @@ var _ = Describe("Repo", func() {
 					CreateFile("foo.host-myhost")
 					os.Symlink("foo.host-myhost", ".foo")
 
-					stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".foo"), false)
+					stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".foo"), false, false)
 
 					Expect(err).To(Succeed())
 					Expect(stored).To(HaveSuffix(".host-myhost"))
@@ -244,13 +244,22 @@ var _ = Describe("Repo", func() {
 					CreateFile("foo.host-otherhost")
 					os.Symlink("foo.host-otherhost", ".foo")
 
-					stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".foo"), false)
+					stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".foo"), false, false)
 
 					Expect(err).To(Succeed())
 					Expect(stored).NotTo(HaveSuffix(".host-myhost"))
 					Expect(stored).NotTo(HaveSuffix(".host-otherhost"))
 					Expect(stored).To(HaveSuffix("/foo"))
 				})
+			})
+		})
+
+		Context("force-copy files", func() {
+			It("returns file name with appropriate prefix", func() {
+				stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), false, true)
+
+				Expect(err).To(Succeed())
+				Expect(stored).To(Equal(filepath.Join(repo.Store, "bashrc.force-copy")))
 			})
 		})
 	})

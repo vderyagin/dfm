@@ -9,7 +9,8 @@ import (
 	"strings"
 )
 
-// FilesIn returns a channel that produces absolute path of files in dir.
+// FilesIn returns a channel that produces absolute path of every regular file
+// in dir. Hidden files (starting with ".") are skipped.
 func FilesIn(dir string) <-chan string {
 	fileChan := make(chan string)
 

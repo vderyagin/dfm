@@ -231,7 +231,7 @@ func (df *DotFile) Delete() error {
 // IsFromThisHost returns true if dotfile is specific to current host, false
 // otherwise.
 func (df *DotFile) IsFromThisHost() bool {
-	return strings.HasSuffix(df.StoredLocation, host.DotFileLocalSuffix())
+	return strings.Contains(df.StoredLocation, host.DotFileLocalSuffix())
 }
 
 // IsGeneric returns true if dotfile is not specific to any host, false

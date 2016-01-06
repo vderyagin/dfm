@@ -80,7 +80,7 @@ func (r *Repo) OriginalFilePath(stored string) string {
 
 // StoredFilePath computes a path for stored dotfile corresponding to a given
 // original path.
-func (r *Repo) StoredFilePath(orig string, hostSpecific bool) (string, error) {
+func (r *Repo) StoredFilePath(orig string, hostSpecific bool, forceCopy bool) (string, error) {
 	relPath, err := filepath.Rel(r.Home, orig)
 
 	if err != nil {
@@ -106,6 +106,10 @@ func (r *Repo) StoredFilePath(orig string, hostSpecific bool) (string, error) {
 
 	if hostSpecific {
 		storedRelPath += host.DotFileLocalSuffix()
+	}
+
+	if forceCopy {
+		storedRelPath += ".force-copy"
 	}
 
 	return filepath.Join(r.Store, storedRelPath), nil
