@@ -20,6 +20,7 @@ directory, except without leading dots in file paths.
 
 Like this:
 
+```
 |-------------------------------+------------------------------|
 | in home directory             | in dotfile storage directory |
 |-------------------------------+------------------------------|
@@ -27,6 +28,7 @@ Like this:
 | .gnupg/gpg.conf               | gnupg/gpg.conf               |
 | .config/fontconfig/fonts.conf | config/fontconfig/fonts.conf |
 |-------------------------------+------------------------------|
+```
 
 You get the idea.
 
@@ -85,6 +87,26 @@ other machines and ignored on machine for which host-specific file
 is intended. Other commands (`list`, `restore`, `link`, `delete`)
 are smart enough to deal with host-specific files automatically and
 in a way that makes sense.
+
+### Forcing regular files instead of symlinks ###
+
+Some application require their dotfiles to be regular files, not symlinks to
+regular files stored elsewhere. DFM supports this, just use `--copy` flag when
+invoking `store` command, like this:
+
+```
+dfm store --copy .xinitc
+```
+
+It will be stored with suffix ".force-copy" in your dotfile storage directory.
+If that copy happens to diverge from stored version, this file will be
+considered in conflict by DFM. You'll be able to do run `dfm link --force
+<file>` to overwrite original file or `dfm store --force <file>` to overwrite
+stored version of it. Other commands also work with such files in a way that
+makes sense.
+
+And yes, this files can also be host-specific.
+
 
 ## Options ##
 
