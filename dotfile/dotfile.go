@@ -118,6 +118,13 @@ func (df *DotFile) Store() error {
 		return err
 	}
 
+	if df.MustBeCopied() {
+		if err := fsutil.CopyFile(df.OriginalLocation, df.StoredLocation); err != nil {
+			return err
+		}
+		return nil
+	}
+
 	if err := os.Rename(df.OriginalLocation, df.StoredLocation); err != nil {
 		return err
 	}
@@ -147,8 +154,14 @@ func (df *DotFile) Link() error {
 		return err
 	}
 
-	if err := os.Symlink(df.StoredLocation, df.OriginalLocation); err != nil {
-		return err
+	if df.MustBeCopied() {
+		if err := fsutil.CopyFile(df.StoredLocation, df.OriginalLocation); err != nil {
+			return err
+		}
+	} else {
+		if err := os.Symlink(df.StoredLocation, df.OriginalLocation); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -164,12 +177,18 @@ func (df *DotFile) Restore() error {
 		return errors.New("can restore only properly linked files")
 	}
 
-	if err := os.Remove(df.OriginalLocation); err != nil {
-		return err
-	}
+	if df.MustBeCopied() {
+		if err := os.Remove(df.StoredLocation); err != nil {
+			return err
+		}
+	} else {
+		if err := os.Remove(df.OriginalLocation); err != nil {
+			return err
+		}
 
-	if err := os.Rename(df.StoredLocation, df.OriginalLocation); err != nil {
-		return err
+		if err := os.Rename(df.StoredLocation, df.OriginalLocation); err != nil {
+			return err
+		}
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {

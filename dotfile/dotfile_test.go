@@ -185,6 +185,31 @@ var _ = Describe("Dotfile", func() {
 			Expect(df().Store()).NotTo(Succeed())
 			Expect(df().IsStored()).To(BeFalse())
 		})
+
+		Context("force-copy files", func() {
+			stored := func() string {
+				s, _ := filepath.Abs("foo.force-copy")
+				return s
+			}
+
+			orig := func() string {
+				o, _ := filepath.Abs(".foo")
+				return o
+			}
+
+			df := func() *DotFile {
+				return New(stored(), orig())
+			}
+
+			It("copies file, leaves original in place", func() {
+				CreateFile(orig())
+				Expect(df().IsStored()).To(BeFalse())
+				Expect(df().Store()).To(Succeed())
+				Expect(df().IsStored()).To(BeTrue())
+				Expect(IsRegularFile(stored())).To(BeTrue())
+				Expect(IsRegularFile(orig())).To(BeTrue())
+			})
+		})
 	})
 
 	Describe("Link", func() {
@@ -224,6 +249,31 @@ var _ = Describe("Dotfile", func() {
 			CreateFile(orig())
 
 			Expect(df().Link()).NotTo(Succeed())
+		})
+
+		Context("force-copy files", func() {
+			stored := func() string {
+				s, _ := filepath.Abs("foo.force-copy")
+				return s
+			}
+
+			orig := func() string {
+				o, _ := filepath.Abs(".foo")
+				return o
+			}
+
+			df := func() *DotFile {
+				return New(stored(), orig())
+			}
+
+			It("copies file, does not symlink it", func() {
+				CreateFile(stored())
+				Expect(df().IsLinked()).To(BeFalse())
+				Expect(df().Link()).To(Succeed())
+				Expect(df().IsLinked()).To(BeTrue())
+				Expect(IsRegularFile(stored())).To(BeTrue())
+				Expect(IsRegularFile(orig())).To(BeTrue())
+			})
 		})
 	})
 
