@@ -18,7 +18,7 @@ var (
 // State represents current state of DotFile.
 type State string
 
-// String regurns string representation o State.
+// String returns a string representation of State.
 func (s State) String() string {
 	return string(s)
 }
