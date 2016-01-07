@@ -59,6 +59,11 @@ func (df *DotFile) IsLinked() bool {
 			return false
 		}
 
+		re := regexp.MustCompile(`\.force-copy`)
+		if fsutil.Exists(re.ReplaceAllLiteralString(df.StoredLocation, "")) {
+			return false
+		}
+
 		originalMD5, err1 := fsutil.MD5(df.OriginalLocation)
 		storedMD5, err2 := fsutil.MD5(df.StoredLocation)
 

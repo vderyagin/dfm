@@ -98,6 +98,11 @@ var _ = Describe("Dotfile", func() {
 				return s
 			}
 
+			conflictingStored := func() string {
+				s, _ := filepath.Abs("foo")
+				return s
+			}
+
 			orig := func() string {
 				o, _ := filepath.Abs(".foo")
 				return o
@@ -123,6 +128,13 @@ var _ = Describe("Dotfile", func() {
 				CreateFile(stored())
 				os.Symlink(stored(), orig())
 
+				Expect(df().IsLinked()).To(BeFalse())
+			})
+
+			It("returns false if non-force-copy file is also present", func() {
+				CreateFileWithContent(stored(), []byte("foo"))
+				CreateFileWithContent(orig(), []byte("foo"))
+				CreateFile(conflictingStored())
 				Expect(df().IsLinked()).To(BeFalse())
 			})
 		})
