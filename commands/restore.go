@@ -7,7 +7,7 @@ import (
 
 // Restore moves dotfiles from store back to its original location, makes
 // sense only for linked files.
-func Restore(c *cli.Context) {
+func Restore(c *cli.Context) error {
 	for _, df := range ArgDotFiles(c) {
 		logger := Logger(c, df)
 
@@ -20,4 +20,6 @@ func Restore(c *cli.Context) {
 			logger.Fail("failed to restore", err.Error())
 		}
 	}
+
+	return nil
 }

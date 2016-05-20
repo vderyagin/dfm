@@ -9,13 +9,15 @@ import (
 )
 
 // Store stores and links back given files.
-func Store(c *cli.Context) {
+func Store(c *cli.Context) error {
 	for _, df := range ArgDotFiles(c) {
-		if c.Bool("force") && fsutil.IsRegularFile(df.OriginalLocation) {
-			os.RemoveAll(df.StoredLocation)
-		}
-
 		logger := Logger(c, df)
+
+		if c.Bool("force") && fsutil.IsRegularFile(df.OriginalLocation) {
+			if err := os.RemoveAll(df.StoredLocation); err != nil {
+				logger.Fail("failed to remove file", err.Error())
+			}
+		}
 
 		switch err := df.Store().(type) {
 		case nil:
@@ -26,4 +28,6 @@ func Store(c *cli.Context) {
 			logger.Fail("failed to store", err.Error())
 		}
 	}
+
+	return nil
 }

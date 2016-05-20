@@ -7,7 +7,7 @@ import (
 
 // Delete removes both stored file and it's symlink, works for properly linked
 // files only.
-func Delete(c *cli.Context) {
+func Delete(c *cli.Context) error {
 	for _, df := range ArgDotFiles(c) {
 		logger := Logger(c, df)
 
@@ -20,4 +20,6 @@ func Delete(c *cli.Context) {
 			logger.Fail("failed to delete", err.Error())
 		}
 	}
+
+	return nil
 }
