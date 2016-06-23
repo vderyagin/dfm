@@ -3,7 +3,8 @@ package commands
 import (
 	"os"
 
-	"github.com/codegangsta/cli"
+	"gopkg.in/urfave/cli.v1"
+
 	"gitlab.com/vderyagin/dfm/dotfile"
 	"gitlab.com/vderyagin/dfm/fsutil"
 )

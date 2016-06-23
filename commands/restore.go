@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"github.com/codegangsta/cli"
 	"gitlab.com/vderyagin/dfm/dotfile"
+	"gopkg.in/urfave/cli.v1"
 )
 
 // Restore moves dotfiles from store back to its original location, makes

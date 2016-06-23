@@ -6,7 +6,8 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/codegangsta/cli"
+	"gopkg.in/urfave/cli.v1"
+
 	"gitlab.com/vderyagin/dfm/commands"
 )
 

@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"github.com/codegangsta/cli"
 	"gitlab.com/vderyagin/dfm/dotfile"
+	"gopkg.in/urfave/cli.v1"
 )
 
 // Delete removes both stored file and it's symlink, works for properly linked
