@@ -19,6 +19,24 @@ func (e SkipError) Error() string {
 	return string(e)
 }
 
+func (e SkipError) ExitCode() int {
+	return 1
+}
+
+type FailError string
+
+func (e FailError) Error() string {
+	return string(e)
+}
+
+func (e FailError) ExitCode() int {
+	return 1
+}
+
+func FailErrorFrom(e error) FailError {
+	return FailError(e.Error())
+}
+
 // DotFile type represents a single dotfile, defined by its storage and
 // linking location. If dotfile is stored, its StoredLocation corresponds to a
 // file within dotfiles repository and OriginalLocation - to symlink in user
@@ -211,23 +229,23 @@ func (df *DotFile) Delete() error {
 	}
 
 	if !df.IsLinked() {
-		return errors.New("can delete only properly linked files")
+		return FailError("can delete only properly linked files")
 	}
 
 	if err := os.Remove(df.StoredLocation); err != nil {
-		return err
+		return FailErrorFrom(err)
 	}
 
 	if err := os.Remove(df.OriginalLocation); err != nil {
-		return err
+		return FailErrorFrom(err)
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {
-		return err
+		return FailErrorFrom(err)
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.OriginalLocation)); err != nil {
-		return err
+		return FailErrorFrom(err)
 	}
 
 	return nil

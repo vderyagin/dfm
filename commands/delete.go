@@ -8,10 +8,18 @@ import (
 // Delete removes both stored file and it's symlink, works for properly linked
 // files only.
 func Delete(c *cli.Context) error {
+	var errs []error
+
 	for _, df := range ArgDotFiles(c) {
 		logger := Logger(c, df)
 
-		switch err := df.Delete().(type) {
+		err := df.Delete()
+
+		if err != nil {
+			errs = append(errs, err)
+		}
+
+		switch err.(type) {
 		case nil:
 			logger.Success("deleted")
 		case dotfile.SkipError:
@@ -21,5 +29,9 @@ func Delete(c *cli.Context) error {
 		}
 	}
 
-	return nil
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return cli.NewMultiError(errs...)
 }
