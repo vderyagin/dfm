@@ -9,6 +9,8 @@ import (
 // Link links all stored dotfiles to their respective locations in home
 // directory.
 func Link(c *cli.Context) error {
+	var errs []error
+
 	for df := range Repo(c).StoredDotFiles() {
 		if df.IsLinked() {
 			continue
@@ -19,6 +21,7 @@ func Link(c *cli.Context) error {
 		if c.Bool("force") && df.IsStored() {
 			if err := os.RemoveAll(df.OriginalLocation); err != nil {
 				logger.Fail("failed to remove file", err.Error())
+				errs = append(errs, err)
 			}
 		}
 
@@ -26,8 +29,13 @@ func Link(c *cli.Context) error {
 			logger.Success("linked")
 		} else {
 			logger.Fail("failed to link", err.Error())
+			errs = append(errs, err)
 		}
 	}
 
-	return nil
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return cli.NewMultiError(errs...)
 }

@@ -162,28 +162,28 @@ func (df *DotFile) Store() error {
 // Link links stored dotfile to its original location.
 func (df *DotFile) Link() error {
 	if !df.IsStored() {
-		return errors.New("can link only already stored files")
+		return FailError("can link only already stored files")
 	}
 
 	if df.IsLinked() {
-		return errors.New("is linked already")
+		return FailError("is linked already")
 	}
 
 	if _, err := os.Lstat(df.OriginalLocation); !os.IsNotExist(err) {
-		return errors.New("conflicting file at original location")
+		return FailError("conflicting file at original location")
 	}
 
 	if err := os.MkdirAll(filepath.Dir(df.OriginalLocation), 0777); err != nil {
-		return err
+		return FailErrorFrom(err)
 	}
 
 	if df.MustBeCopied() {
 		if err := fsutil.CopyFile(df.StoredLocation, df.OriginalLocation); err != nil {
-			return err
+			return FailErrorFrom(err)
 		}
 	} else {
 		if err := os.Symlink(df.StoredLocation, df.OriginalLocation); err != nil {
-			return err
+			return FailErrorFrom(err)
 		}
 	}
 
