@@ -197,25 +197,25 @@ func (df *DotFile) Restore() error {
 	}
 
 	if !df.IsLinked() {
-		return errors.New("can restore only properly linked files")
+		return FailError("can restore only properly linked files")
 	}
 
 	if df.MustBeCopied() {
 		if err := os.Remove(df.StoredLocation); err != nil {
-			return err
+			return FailErrorFrom(err)
 		}
 	} else {
 		if err := os.Remove(df.OriginalLocation); err != nil {
-			return err
+			return FailErrorFrom(err)
 		}
 
 		if err := os.Rename(df.StoredLocation, df.OriginalLocation); err != nil {
-			return err
+			return FailErrorFrom(err)
 		}
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {
-		return err
+		return FailErrorFrom(err)
 	}
 
 	return nil
