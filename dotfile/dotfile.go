@@ -2,7 +2,6 @@ package dotfile
 
 import (
 	"bytes"
-	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -134,26 +133,26 @@ func (df *DotFile) Store() error {
 	}
 
 	if !df.IsReadyToBeStored() {
-		return errors.New("can not be stored")
+		return FailError("can not be stored")
 	}
 
 	if err := os.MkdirAll(filepath.Dir(df.StoredLocation), 0777); err != nil {
-		return err
+		return FailErrorFrom(err)
 	}
 
 	if df.MustBeCopied() {
 		if err := fsutil.CopyFile(df.OriginalLocation, df.StoredLocation); err != nil {
-			return err
+			return FailErrorFrom(err)
 		}
 		return nil
 	}
 
 	if err := os.Rename(df.OriginalLocation, df.StoredLocation); err != nil {
-		return err
+		return FailErrorFrom(err)
 	}
 
 	if err := os.Symlink(df.StoredLocation, df.OriginalLocation); err != nil {
-		return err
+		return FailErrorFrom(err)
 	}
 
 	return nil
