@@ -6,7 +6,7 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"gopkg.in/urfave/cli.v1"
+	"github.com/urfave/cli"
 
 	"gitlab.com/vderyagin/dfm/commands"
 )
