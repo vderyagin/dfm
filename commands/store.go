@@ -3,7 +3,7 @@ package commands
 import (
 	"os"
 
-	"gopkg.in/urfave/cli.v1"
+	"github.com/urfave/cli"
 
 	"gitlab.com/vderyagin/dfm/dotfile"
 	"gitlab.com/vderyagin/dfm/fsutil"

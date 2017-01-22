@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"gopkg.in/urfave/cli.v1"
+	"github.com/urfave/cli"
 )
 
 // List displays a list of stored dotfiles and their states.

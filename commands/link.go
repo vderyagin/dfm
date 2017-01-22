@@ -3,7 +3,7 @@ package commands
 import (
 	"os"
 
-	"gopkg.in/urfave/cli.v1"
+	"github.com/urfave/cli"
 )
 
 // Link links all stored dotfiles to their respective locations in home
