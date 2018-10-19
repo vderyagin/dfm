@@ -34,4 +34,4 @@ func RemoveSuffix(input string) string {
 }
 
 // PathRegexp returns regexp matching path of any host-specific dotfile.
-var PathRegexp = regexp.MustCompile(`\.host-[[:alpha:]]+`)
+var PathRegexp = regexp.MustCompile(`\.host-[[:alnum:]]+`)
