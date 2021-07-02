@@ -9,9 +9,15 @@
 [1]: http://golang.org/doc/install
 [2]: http://golang.org/doc/code.html#GOPATH
 
+## development ∷ running tests
+
+```sh
+go run github.com/onsi/ginkgo/ginkgo -r
+```
+
 ## Usage ##
 
-```
+```sh
 dfm --help
 ```
 
@@ -55,7 +61,7 @@ Host-specific dotfiles are only used on machine they are intended for and ignore
 
 To store given dotfiles as host-specific just use `--host-specific` flag when invoking `store` command, like this:
 
-```
+```sh
 dfm store --host-specific .xinitrc
 ```
 
@@ -65,7 +71,7 @@ It will be stored with suffix ".host-[host name]" in your dotfile storage direct
 
 Some application require their dotfiles to be regular files, not symlinks to regular files stored elsewhere. DFM supports this, just use `--copy` flag when invoking `store` command, like this:
 
-```
+```sh
 dfm store --copy .xinitc
 ```
 
