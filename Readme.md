@@ -9,7 +9,15 @@
 [1]: http://golang.org/doc/install
 [2]: http://golang.org/doc/code.html#GOPATH
 
-## development ∷ running tests
+## development
+
+### build
+
+```sh
+go get && go build
+```
+
+### running tests
 
 ```sh
 go run github.com/onsi/ginkgo/ginkgo -r
