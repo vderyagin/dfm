@@ -8,7 +8,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	"gitlab.com/vderyagin/dfm/commands"
+	"github.com/vderyagin/dfm/commands"
 )
 
 func homeDir() string {

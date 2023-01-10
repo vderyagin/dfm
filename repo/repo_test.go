@@ -4,9 +4,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"gitlab.com/vderyagin/dfm/dotfile"
-	. "gitlab.com/vderyagin/dfm/repo"
-	. "gitlab.com/vderyagin/dfm/testutil"
+	"github.com/vderyagin/dfm/dotfile"
+	. "github.com/vderyagin/dfm/repo"
+	. "github.com/vderyagin/dfm/testutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

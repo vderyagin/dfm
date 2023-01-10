@@ -2,7 +2,7 @@ package commands
 
 import (
 	"github.com/urfave/cli"
-	"gitlab.com/vderyagin/dfm/dotfile"
+	"github.com/vderyagin/dfm/dotfile"
 )
 
 // Delete removes both stored file and it's symlink, works for properly linked

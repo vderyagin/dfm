@@ -1,8 +1,8 @@
 package testutil_test
 
 import (
-	. "gitlab.com/vderyagin/dfm/fsutil"
-	. "gitlab.com/vderyagin/dfm/testutil"
+	. "github.com/vderyagin/dfm/fsutil"
+	. "github.com/vderyagin/dfm/testutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

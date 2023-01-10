@@ -2,7 +2,7 @@ package commands
 
 import (
 	"github.com/urfave/cli"
-	"gitlab.com/vderyagin/dfm/dotfile"
+	"github.com/vderyagin/dfm/dotfile"
 )
 
 // Restore moves dotfiles from store back to its original location, makes

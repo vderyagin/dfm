@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"gitlab.com/vderyagin/dfm/fsutil"
-	"gitlab.com/vderyagin/dfm/host"
+	"github.com/vderyagin/dfm/fsutil"
+	"github.com/vderyagin/dfm/host"
 )
 
 type SkipError string

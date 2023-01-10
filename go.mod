@@ -1,4 +1,4 @@
-module gitlab.com/vderyagin/dfm
+module github.com/vderyagin/dfm
 
 go 1.16
 

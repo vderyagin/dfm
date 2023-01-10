@@ -5,8 +5,8 @@ import (
 
 	"github.com/urfave/cli"
 
-	"gitlab.com/vderyagin/dfm/dotfile"
-	"gitlab.com/vderyagin/dfm/fsutil"
+	"github.com/vderyagin/dfm/dotfile"
+	"github.com/vderyagin/dfm/fsutil"
 )
 
 // Store stores and links back given files.
