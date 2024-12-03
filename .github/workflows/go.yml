@@ -20,8 +20,8 @@ jobs:
       - name: Install dependencies
         run: go get
       - name: Build
-        run: go build -v ./...
+        run: go build -v
       - name: Test
         run: go run github.com/onsi/ginkgo/ginkgo -r
-      - name: Validate that binary runs
+      - name: Validate that binary runs at all
         run: ./dfm --help | grep VERSION
