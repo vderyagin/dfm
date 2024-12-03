@@ -1,6 +1,6 @@
 ---
 
-name: Go
+name: Build, test & possibly release
 
 on:
   - push
