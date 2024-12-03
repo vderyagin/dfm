@@ -25,3 +25,8 @@ jobs:
         run: go run github.com/onsi/ginkgo/ginkgo -r
       - name: Validate that binary runs at all
         run: ./dfm --help | grep VERSION
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dfm
