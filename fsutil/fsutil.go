@@ -138,3 +138,78 @@ func CopyFile(src, dst string) error {
 	}
 	return d.Close()
 }
+
+func SymlinksIn(dir string) <-chan string {
+	symlinkChan := make(chan string)
+
+	dir, err := filepath.Abs(dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go func(c chan<- string) {
+		filepath.Walk(dir, func(path string, fi os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+				return nil
+			}
+
+			if relPath, _ := filepath.Rel(dir, path); strings.HasPrefix(relPath, ".") {
+				return nil
+			}
+
+			c <- path
+
+			return nil
+		})
+
+		close(c)
+	}(symlinkChan)
+
+	return symlinkChan
+}
+
+func IsRelativeSymlinkWithinDir(symlink, dir string) bool {
+	if !IsSymlink(symlink) {
+		return false
+	}
+
+	target, err := os.Readlink(symlink)
+	if err != nil {
+		return false
+	}
+
+	if filepath.IsAbs(target) {
+		return false
+	}
+
+	resolvedTarget := filepath.Join(filepath.Dir(symlink), target)
+	resolvedTarget, err = filepath.Abs(resolvedTarget)
+	if err != nil {
+		return false
+	}
+
+	dir, err = filepath.Abs(dir)
+	if err != nil {
+		return false
+	}
+
+	return strings.HasPrefix(resolvedTarget, dir+string(filepath.Separator)) || resolvedTarget == dir
+}
+
+func ResolveSymlink(symlink string) (string, error) {
+	target, err := os.Readlink(symlink)
+	if err != nil {
+		return "", err
+	}
+
+	if filepath.IsAbs(target) {
+		return filepath.Clean(target), nil
+	}
+
+	resolved := filepath.Join(filepath.Dir(symlink), target)
+	return filepath.Abs(resolved)
+}
