@@ -38,7 +38,7 @@ func New(store, home string) *Repo {
 }
 
 // StoredDotFiles returns a channel producing DotFile objects for every stored
-// dotfile.
+// dotfile, including alias symlinks.
 func (r *Repo) StoredDotFiles() <-chan *dotfile.DotFile {
 	dotFileChan := make(chan *dotfile.DotFile)
 
@@ -49,7 +49,29 @@ func (r *Repo) StoredDotFiles() <-chan *dotfile.DotFile {
 				OriginalLocation: r.OriginalFilePath(file),
 			}
 
-			// is it generic file without conflicting host-specific one?
+			noConflict := df.IsGeneric() && !fsutil.Exists(df.StoredLocation+host.DotFileLocalSuffix())
+
+			if df.IsFromThisHost() || noConflict {
+				c <- &df
+			}
+		}
+
+		for symlink := range fsutil.SymlinksIn(r.Store) {
+			if !fsutil.IsRelativeSymlinkWithinDir(symlink, r.Store) {
+				continue
+			}
+
+			aliasTarget, err := fsutil.ResolveSymlink(symlink)
+			if err != nil {
+				continue
+			}
+
+			df := dotfile.DotFile{
+				StoredLocation:   symlink,
+				OriginalLocation: r.OriginalFilePath(symlink),
+				AliasTarget:      aliasTarget,
+			}
+
 			noConflict := df.IsGeneric() && !fsutil.Exists(df.StoredLocation+host.DotFileLocalSuffix())
 
 			if df.IsFromThisHost() || noConflict {

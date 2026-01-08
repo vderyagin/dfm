@@ -40,9 +40,12 @@ func FailErrorFrom(e error) FailError {
 // linking location. If dotfile is stored, its StoredLocation corresponds to a
 // file within dotfiles repository and OriginalLocation - to symlink in user
 // home directory where system expects original file to be.
+// If StoredLocation is a relative symlink within the store (an alias),
+// AliasTarget contains the resolved absolute path of the target file.
 type DotFile struct {
 	StoredLocation   string
 	OriginalLocation string
+	AliasTarget      string
 }
 
 // New returns a pointer to a DotFile object. Paths passed as arguments must
@@ -60,6 +63,9 @@ func New(stored, original string) *DotFile {
 
 // IsStored returns true if given dotfile is stored.
 func (df *DotFile) IsStored() bool {
+	if df.IsAlias() {
+		return fsutil.IsSymlink(df.StoredLocation) && fsutil.IsRegularFile(df.AliasTarget)
+	}
 	return fsutil.IsRegularFile(df.StoredLocation)
 }
 
@@ -95,8 +101,15 @@ func (df *DotFile) IsLinked() bool {
 		return false
 	}
 
-	origLinkTargetInfo, err := os.Stat(df.OriginalLocation)
+	if df.IsAlias() {
+		resolved, err := fsutil.ResolveSymlink(df.OriginalLocation)
+		if err != nil {
+			return false
+		}
+		return resolved == df.AliasTarget
+	}
 
+	origLinkTargetInfo, err := os.Stat(df.OriginalLocation)
 	if err != nil {
 		return false
 	}
@@ -181,7 +194,11 @@ func (df *DotFile) Link() error {
 			return FailErrorFrom(err)
 		}
 	} else {
-		if err := os.Symlink(df.StoredLocation, df.OriginalLocation); err != nil {
+		symlinkTarget := df.StoredLocation
+		if df.IsAlias() {
+			symlinkTarget = df.AliasTarget
+		}
+		if err := os.Symlink(symlinkTarget, df.OriginalLocation); err != nil {
 			return FailErrorFrom(err)
 		}
 	}
@@ -190,6 +207,8 @@ func (df *DotFile) Link() error {
 }
 
 // Restore moves stored file back into its original location, replacing symlink.
+// For alias files, only removes the symlink at original location, keeping the
+// alias symlink and target file in the store.
 func (df *DotFile) Restore() error {
 	if df.IsReadyToBeStored() {
 		return SkipError("not stored to begin with")
@@ -197,6 +216,16 @@ func (df *DotFile) Restore() error {
 
 	if !df.IsLinked() {
 		return FailError("can restore only properly linked files")
+	}
+
+	if df.IsAlias() {
+		if err := os.Remove(df.OriginalLocation); err != nil {
+			return FailErrorFrom(err)
+		}
+		if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.OriginalLocation)); err != nil {
+			return FailErrorFrom(err)
+		}
+		return nil
 	}
 
 	if df.MustBeCopied() {
@@ -266,4 +295,8 @@ func (df *DotFile) IsGeneric() bool {
 // copied to appropriate place instead.
 func (df *DotFile) MustBeCopied() bool {
 	return regexp.MustCompile(`\.force-copy(\.|\z)`).MatchString(df.StoredLocation)
+}
+
+func (df *DotFile) IsAlias() bool {
+	return df.AliasTarget != ""
 }

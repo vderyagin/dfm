@@ -470,4 +470,185 @@ var _ = Describe("Dotfile", func() {
 			Expect(hostSpecific().MustBeCopied()).To(BeFalse())
 		})
 	})
+
+	Context("alias files", func() {
+		var targetStored, aliasStored, aliasTarget, aliasOrig string
+
+		BeforeEach(func() {
+			targetStored, _ = filepath.Abs("foo")
+			aliasStored, _ = filepath.Abs("bar")
+			aliasTarget, _ = filepath.Abs("foo")
+			aliasOrig, _ = filepath.Abs(".bar")
+		})
+
+		aliasDf := func() *DotFile {
+			return &DotFile{
+				StoredLocation:   aliasStored,
+				OriginalLocation: aliasOrig,
+				AliasTarget:      aliasTarget,
+			}
+		}
+
+		Describe("IsAlias", func() {
+			It("returns true when AliasTarget is set", func() {
+				Expect(aliasDf().IsAlias()).To(BeTrue())
+			})
+
+			It("returns false when AliasTarget is empty", func() {
+				targetOrig, _ := filepath.Abs(".foo")
+				df := New(targetStored, targetOrig)
+				Expect(df.IsAlias()).To(BeFalse())
+			})
+		})
+
+		Describe("IsStored", func() {
+			It("returns true when alias symlink exists and target is a regular file", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+
+				Expect(aliasDf().IsStored()).To(BeTrue())
+			})
+
+			It("returns false when alias symlink exists but target does not exist", func() {
+				os.Symlink("foo", aliasStored)
+
+				Expect(aliasDf().IsStored()).To(BeFalse())
+			})
+
+			It("returns false when alias symlink does not exist", func() {
+				CreateFile(targetStored)
+
+				Expect(aliasDf().IsStored()).To(BeFalse())
+			})
+		})
+
+		Describe("IsLinked", func() {
+			It("returns true when original location symlinks to alias target", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				os.Symlink(aliasTarget, aliasOrig)
+
+				Expect(aliasDf().IsLinked()).To(BeTrue())
+			})
+
+			It("returns false when original location symlinks to alias itself", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				os.Symlink(aliasStored, aliasOrig)
+
+				Expect(aliasDf().IsLinked()).To(BeFalse())
+			})
+
+			It("returns false when nothing at original location", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+
+				Expect(aliasDf().IsLinked()).To(BeFalse())
+			})
+
+			It("returns false when regular file at original location", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				CreateFile(aliasOrig)
+
+				Expect(aliasDf().IsLinked()).To(BeFalse())
+			})
+
+			It("returns false when alias is not stored", func() {
+				Expect(aliasDf().IsLinked()).To(BeFalse())
+			})
+		})
+
+		Describe("Link", func() {
+			It("creates symlink from original location to alias target", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+
+				Expect(aliasDf().IsLinked()).To(BeFalse())
+				Expect(aliasDf().Link()).To(Succeed())
+				Expect(aliasDf().IsLinked()).To(BeTrue())
+
+				linkTarget, _ := os.Readlink(aliasOrig)
+				Expect(linkTarget).To(Equal(aliasTarget))
+			})
+
+			It("fails if alias is not stored", func() {
+				Expect(aliasDf().Link()).NotTo(Succeed())
+			})
+
+			It("fails if already linked", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				os.Symlink(aliasTarget, aliasOrig)
+
+				Expect(aliasDf().Link()).NotTo(Succeed())
+			})
+
+			It("fails if conflicting file at original location", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				CreateFile(aliasOrig)
+
+				Expect(aliasDf().Link()).NotTo(Succeed())
+			})
+		})
+
+		Describe("Restore", func() {
+			It("removes symlink at original location", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				aliasDf().Link()
+
+				Expect(aliasDf().Restore()).To(Succeed())
+				Expect(Exists(aliasOrig)).To(BeFalse())
+			})
+
+			It("keeps alias symlink in store", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				aliasDf().Link()
+
+				Expect(aliasDf().Restore()).To(Succeed())
+				Expect(IsSymlink(aliasStored)).To(BeTrue())
+			})
+
+			It("keeps target file in store", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				aliasDf().Link()
+
+				Expect(aliasDf().Restore()).To(Succeed())
+				Expect(IsRegularFile(targetStored)).To(BeTrue())
+			})
+		})
+
+		Describe("Delete", func() {
+			It("removes alias symlink from store", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				aliasDf().Link()
+
+				Expect(aliasDf().Delete()).To(Succeed())
+				Expect(Exists(aliasStored)).To(BeFalse())
+			})
+
+			It("removes symlink from original location", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				aliasDf().Link()
+
+				Expect(aliasDf().Delete()).To(Succeed())
+				Expect(Exists(aliasOrig)).To(BeFalse())
+			})
+
+			It("keeps target file in store", func() {
+				CreateFile(targetStored)
+				os.Symlink("foo", aliasStored)
+				aliasDf().Link()
+
+				Expect(aliasDf().Delete()).To(Succeed())
+				Expect(IsRegularFile(targetStored)).To(BeTrue())
+			})
+		})
+	})
 })

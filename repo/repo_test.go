@@ -135,6 +135,85 @@ var _ = Describe("Repo", func() {
 				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
 			})
 		})
+
+		Context("alias symlinks", func() {
+			It("includes alias symlinks pointing to files within store", func() {
+				repo := New(".", ".")
+				CreateFile("bashrc")
+				os.Symlink("bashrc", "bash_profile")
+
+				dotfiles := chanToSlice(repo.StoredDotFiles())
+				Expect(dotfiles).To(HaveLen(2))
+			})
+
+			It("sets AliasTarget for alias symlinks", func() {
+				repo := New(".", ".")
+				CreateFile("bashrc")
+				os.Symlink("bashrc", "bash_profile")
+
+				expectedTarget, _ := filepath.Abs("bashrc")
+				aliasStored, _ := filepath.Abs("bash_profile")
+
+				dotfiles := chanToSlice(repo.StoredDotFiles())
+				var alias *dotfile.DotFile
+				for _, df := range dotfiles {
+					if df.StoredLocation == aliasStored {
+						alias = df
+						break
+					}
+				}
+
+				Expect(alias).NotTo(BeNil())
+				Expect(alias.AliasTarget).To(Equal(expectedTarget))
+				Expect(alias.IsAlias()).To(BeTrue())
+			})
+
+			It("ignores absolute symlinks", func() {
+				repo := New(".", ".")
+				CreateFile("bashrc")
+				absTarget, _ := filepath.Abs("bashrc")
+				os.Symlink(absTarget, "bash_profile")
+
+				dotfiles := chanToSlice(repo.StoredDotFiles())
+				Expect(dotfiles).To(HaveLen(1))
+			})
+
+			It("ignores symlinks pointing outside store", func() {
+				CreateDir("store")
+				CreateFile("outside")
+				os.Symlink("../outside", "store/link")
+
+				storeAbs, _ := filepath.Abs("store")
+				storeRepo := New(storeAbs, ".")
+
+				dotfiles := chanToSlice(storeRepo.StoredDotFiles())
+				Expect(dotfiles).To(BeEmpty())
+			})
+
+			It("computes correct OriginalLocation for alias", func() {
+				CreateDir("store")
+				CreateFile("store/bashrc")
+				os.Symlink("bashrc", "store/bash_profile")
+
+				storeAbs, _ := filepath.Abs("store")
+				homeAbs, _ := filepath.Abs("home")
+				repo := New(storeAbs, homeAbs)
+
+				aliasStored, _ := filepath.Abs("store/bash_profile")
+
+				dotfiles := chanToSlice(repo.StoredDotFiles())
+				var alias *dotfile.DotFile
+				for _, df := range dotfiles {
+					if df.StoredLocation == aliasStored {
+						alias = df
+						break
+					}
+				}
+
+				Expect(alias).NotTo(BeNil())
+				Expect(alias.OriginalLocation).To(Equal(filepath.Join(homeAbs, ".bash_profile")))
+			})
+		})
 	})
 
 	Describe("OriginalFilePath", func() {
