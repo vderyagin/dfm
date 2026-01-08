@@ -2,22 +2,19 @@
 
 ## Installation ##
 
-- Have [Go][1] installed
-- Have your Go workspace configured (as per [official documentation][2])
-- `go get github.com/vderyagin/dfm`
-
-[1]: http://golang.org/doc/install
-[2]: http://golang.org/doc/code.html#GOPATH
-
-## development
-
-### build
-
 ```sh
-go get && go build
+go install github.com/vderyagin/dfm@latest
 ```
 
-### running tests
+## Development
+
+### Build
+
+```sh
+go build
+```
+
+### Running tests
 
 ```sh
 go run github.com/onsi/ginkgo/ginkgo -r
@@ -76,15 +73,40 @@ It will be stored with suffix ".host-[host name]" in your dotfile storage direct
 Some application require their dotfiles to be regular files, not symlinks to regular files stored elsewhere. DFM supports this, just use `--copy` flag when invoking `store` command, like this:
 
 ```sh
-dfm store --copy .xinitc
+dfm store --copy .xinitrc
 ```
 
 It will be stored with suffix ".force-copy" in your dotfile storage directory. If that copy happens to diverge from stored version, this file will be considered in conflict by DFM. You'll be able to do run `dfm link --force <file>` to overwrite original file or `dfm store --force <file>` to overwrite stored version of it. Other commands also work with such files in a way that makes sense.
 
-And yes, these files can also be host-specific, two suffixes are just combined in this case, like "bashrc.host-localhost.force-copy"'.
+And yes, these files can also be host-specific, two suffixes are just combined in this case, like "bashrc.host-localhost.force-copy".
+
+### Linking a single file to multiple locations (aliases) ###
+
+Sometimes you want the same file to appear at multiple locations in your home directory. For example, you might want both `~/.bashrc` and `~/.bash_profile` to point to the same file.
+
+DFM supports this via alias symlinks within the store. Create a relative symlink in your dotfile storage directory that points to another file in the store:
+
+```sh
+cd ~/.dotfiles
+ln -s bashrc bash_profile
+dfm link
+```
+
+After running `dfm link`, both `~/.bashrc` and `~/.bash_profile` will be symlinks pointing to `~/.dotfiles/bashrc` (the actual file, not the alias symlink).
+
+| in dotfile storage     | in home directory                   |
+|------------------------|-------------------------------------|
+| bashrc (file)          | .bashrc -> ~/.dotfiles/bashrc       |
+| bash_profile -> bashrc | .bash_profile -> ~/.dotfiles/bashrc |
+
+Rules for alias symlinks:
+- Must be relative symlinks (not absolute paths)
+- Must point to a file within the store directory
+- `dfm restore` on an alias removes only the home directory symlink, keeping the alias in the store
+- `dfm delete` on an alias removes both the alias symlink and the home directory symlink, but keeps the target file
 
 ## Options ##
 
-Dotfile storage directory defaults to `~/.dotfiles` and home directory is, well, home directory of current user. It is possible to override both with `--store` and `--home` global options or with `DOTFILES_STORE_DIR` and `DOTFILES_HOME_DIR` enviroment variables. You probably not gonna need to override home directory, but it is possible to imagine situation in which it would be useful, like using `dfm` on remote filesystem through NFS.
+Dotfile storage directory defaults to `~/.dotfiles` and home directory is, well, home directory of current user. It is possible to override both with `--store` and `--home` global options or with `DOTFILES_STORE_DIR` and `DOTFILES_HOME_DIR` environment variables. You probably won't need to override the home directory, but it is possible to imagine situations where it would be useful, like using `dfm` on a remote filesystem through NFS.
 
-There is no flag for overriding current hostname, but you can do it by setting `HOST` enviroment variable.
+There is no flag for overriding current hostname, but you can do it by setting the `HOST` environment variable.
