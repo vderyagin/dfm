@@ -94,7 +94,7 @@ func main() {
 	app.Author = "Victor Deryagin <vderyagin@gmail.com>"
 	app.Name = "dfm"
 	app.Usage = "Dotfile manager"
-	app.Version = "0.2.2"
+	app.Version = "0.3.0"
 	app.Flags = appFlags
 	app.Commands = appCommands
 
