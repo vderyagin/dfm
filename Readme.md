@@ -8,16 +8,14 @@ go install github.com/vderyagin/dfm@latest
 
 ## Development
 
-### Build
+Requires [just](https://github.com/casey/just) command runner. Run `just` to see available tasks.
 
 ```sh
-go build
-```
-
-### Running tests
-
-```sh
-go run github.com/onsi/ginkgo/ginkgo -r
+just install-tools  # install ginkgo test runner
+just build          # build binary
+just test           # run tests
+just format         # format code
+just lint           # run static analysis
 ```
 
 ## Usage ##
