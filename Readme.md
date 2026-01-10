@@ -29,7 +29,7 @@ Basic idea is to have a separate directory where all your dotfiles are stored (u
 Like this:
 
 | in home directory             | in dotfile storage directory |
-|-------------------------------+------------------------------|
+|-------------------------------|------------------------------|
 | .gitconfig                    | gitconfig                    |
 | .gnupg/gpg.conf               | gnupg/gpg.conf               |
 | .config/fontconfig/fonts.conf | config/fontconfig/fonts.conf |
