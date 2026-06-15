@@ -82,60 +82,6 @@ var _ = Describe("Repo", func() {
 			Expect(chanToSlice(repo.StoredDotFiles())).To(HaveLen(2))
 		})
 
-		Context("host-specific dotfiles", func() {
-			ExecuteEachWithHostName("myhost")
-
-			It("returns only one of multiple files with same original location", func() {
-				repo := New(".", ".")
-				CreateFile("bashrc")
-				CreateFile("bashrc.host-myhost")
-				CreateFile("bashrc.host-otherhost")
-
-				Expect(chanToSlice(repo.StoredDotFiles())).To(HaveLen(1))
-			})
-
-			It("ignores all dotfiles specific to other hosts", func() {
-				repo := New(".", ".")
-				CreateFile("bashrc.host-otherhost")
-				CreateFile("bashrc.host-stillotherhost")
-
-				Expect(chanToSlice(repo.StoredDotFiles())).To(BeEmpty())
-			})
-
-			It("favors files specific to current host over files from other host", func() {
-				repo := New(".", ".")
-				CreateFile("bashrc.host-myhost")
-				CreateFile("bashrc.host-otherhost")
-
-				expected, _ := filepath.Abs("bashrc.host-myhost")
-				dotfiles := chanToSlice(repo.StoredDotFiles())
-				Expect(dotfiles).To(HaveLen(1))
-				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
-			})
-
-			It("favors files specific to current host over generic ones", func() {
-				repo := New(".", ".")
-				CreateFile("bashrc")
-				CreateFile("bashrc.host-myhost")
-
-				expected, _ := filepath.Abs("bashrc.host-myhost")
-				dotfiles := chanToSlice(repo.StoredDotFiles())
-				Expect(dotfiles).To(HaveLen(1))
-				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
-			})
-
-			It("favors generic files over files specific to other hosts", func() {
-				repo := New(".", ".")
-				CreateFile("bashrc")
-				CreateFile("bashrc.host-otherhost")
-
-				expected, _ := filepath.Abs("bashrc")
-				dotfiles := chanToSlice(repo.StoredDotFiles())
-				Expect(dotfiles).To(HaveLen(1))
-				Expect(dotfiles[0].StoredLocation).To(Equal(expected))
-			})
-		})
-
 		Context("alias symlinks", func() {
 			It("includes alias symlinks pointing to files within store", func() {
 				repo := New(".", ".")
@@ -231,49 +177,13 @@ var _ = Describe("Repo", func() {
 			Expect(orig).To(Equal(filepath.Join(repo.Home, ".config/camlistore/server-config.json")))
 		})
 
-		Context("host-specific dotfiles", func() {
-			ExecuteEachWithHostName("myhost")
-
-			It("removes host-specific suffix for current host", func() {
-				orig := repo.OriginalFilePath(filepath.Join(repo.Store, "bashrc.host-myhost"))
-
-				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
-			})
-
-			It("removes host-specific suffix for other hosts", func() {
-				orig := repo.OriginalFilePath(filepath.Join(repo.Store, "bashrc.host-otherhost"))
-
-				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
-			})
-		})
-
-		Context("dotfiles that must be copied, not symlinked", func() {
-			It("removes suffix makring files a such that must be copied", func() {
-				orig := repo.OriginalFilePath(filepath.Join(repo.Store, "bashrc.force-copy"))
-				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
-			})
-		})
-
-		Context("host-specific files that must be copied", func() {
-			It("removes both suffixes when host suffix is first", func() {
-				orig := repo.OriginalFilePath(filepath.Join(repo.Store,
-					"bashrc.host-foo.force-copy"))
-				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
-			})
-
-			It("removes both suffixes when force-copy one is first", func() {
-				orig := repo.OriginalFilePath(filepath.Join(repo.Store,
-					"bashrc.force-copy.host-foo"))
-				Expect(orig).To(Equal(filepath.Join(repo.Home, ".bashrc")))
-			})
-		})
 	})
 
 	Describe("StoredFilePath", func() {
 		repo := New("/store", "/")
 
 		It("returns proper file name for simple case", func() {
-			stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), false, false)
+			stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"))
 
 			Expect(err).To(Succeed())
 			Expect(stored).To(Equal(filepath.Join(repo.Store, "bashrc")))
@@ -281,65 +191,17 @@ var _ = Describe("Repo", func() {
 
 		It("returns proper file name for for deeply nested file", func() {
 			orig := filepath.Join(repo.Home, ".config/camlistore/server-config.json")
-			stored, err := repo.StoredFilePath(orig, false, false)
+			stored, err := repo.StoredFilePath(orig)
 
 			Expect(err).To(Succeed())
 			Expect(stored).To(Equal(filepath.Join(repo.Store, "config/camlistore/server-config.json")))
 		})
 
 		It("fails if path from home directory does not start with dot", func() {
-			df, err := repo.StoredFilePath(filepath.Join(repo.Home, "bashrc"), false, false)
+			df, err := repo.StoredFilePath(filepath.Join(repo.Home, "bashrc"))
 
 			Expect(df).To(BeEmpty())
 			Expect(err).NotTo(Succeed())
-		})
-
-		Context("host-specific dotfiles", func() {
-			ExecuteEachWithHostName("myhost")
-
-			It("returns name with host-specific suffix when requested", func() {
-				df, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), true, false)
-
-				Expect(err).To(Succeed())
-				Expect(df).To(HaveSuffix(".host-myhost"))
-			})
-
-			Context("original file is a link", func() {
-				ExecuteEachInTempDir()
-
-				It("returns file path specific to current host, if linked", func() {
-					repo := New(".", ".")
-					CreateFile("foo.host-myhost")
-					os.Symlink("foo.host-myhost", ".foo")
-
-					stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".foo"), false, false)
-
-					Expect(err).To(Succeed())
-					Expect(stored).To(HaveSuffix(".host-myhost"))
-				})
-
-				It("returns generic file path if linked to file specific to other host", func() {
-					repo := New(".", ".")
-					CreateFile("foo.host-otherhost")
-					os.Symlink("foo.host-otherhost", ".foo")
-
-					stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".foo"), false, false)
-
-					Expect(err).To(Succeed())
-					Expect(stored).NotTo(HaveSuffix(".host-myhost"))
-					Expect(stored).NotTo(HaveSuffix(".host-otherhost"))
-					Expect(stored).To(HaveSuffix("/foo"))
-				})
-			})
-		})
-
-		Context("force-copy files", func() {
-			It("returns file name with appropriate prefix", func() {
-				stored, err := repo.StoredFilePath(filepath.Join(repo.Home, ".bashrc"), false, true)
-
-				Expect(err).To(Succeed())
-				Expect(stored).To(Equal(filepath.Join(repo.Store, "bashrc.force-copy")))
-			})
 		})
 	})
 })

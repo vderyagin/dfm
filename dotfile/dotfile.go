@@ -1,15 +1,11 @@
 package dotfile
 
 import (
-	"bytes"
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 
 	"github.com/vderyagin/dfm/fsutil"
-	"github.com/vderyagin/dfm/host"
 )
 
 type SkipError string
@@ -76,27 +72,6 @@ func (df *DotFile) IsLinked() bool {
 		return false
 	}
 
-	if df.MustBeCopied() {
-		if !(fsutil.IsRegularFile(df.OriginalLocation) &&
-			fsutil.IsRegularFile(df.StoredLocation)) {
-			return false
-		}
-
-		re := regexp.MustCompile(`\.force-copy`)
-		if fsutil.Exists(re.ReplaceAllLiteralString(df.StoredLocation, "")) {
-			return false
-		}
-
-		originalMD5, err1 := fsutil.MD5(df.OriginalLocation)
-		storedMD5, err2 := fsutil.MD5(df.StoredLocation)
-
-		if err1 != nil || err2 != nil {
-			return false
-		}
-
-		return bytes.Compare(originalMD5, storedMD5) == 0
-	}
-
 	if !fsutil.IsSymlink(df.OriginalLocation) {
 		return false
 	}
@@ -153,13 +128,6 @@ func (df *DotFile) Store() error {
 		return FailErrorFrom(err)
 	}
 
-	if df.MustBeCopied() {
-		if err := fsutil.CopyFile(df.OriginalLocation, df.StoredLocation); err != nil {
-			return FailErrorFrom(err)
-		}
-		return nil
-	}
-
 	if err := os.Rename(df.OriginalLocation, df.StoredLocation); err != nil {
 		return FailErrorFrom(err)
 	}
@@ -189,18 +157,12 @@ func (df *DotFile) Link() error {
 		return FailErrorFrom(err)
 	}
 
-	if df.MustBeCopied() {
-		if err := fsutil.CopyFile(df.StoredLocation, df.OriginalLocation); err != nil {
-			return FailErrorFrom(err)
-		}
-	} else {
-		symlinkTarget := df.StoredLocation
-		if df.IsAlias() {
-			symlinkTarget = df.AliasTarget
-		}
-		if err := os.Symlink(symlinkTarget, df.OriginalLocation); err != nil {
-			return FailErrorFrom(err)
-		}
+	symlinkTarget := df.StoredLocation
+	if df.IsAlias() {
+		symlinkTarget = df.AliasTarget
+	}
+	if err := os.Symlink(symlinkTarget, df.OriginalLocation); err != nil {
+		return FailErrorFrom(err)
 	}
 
 	return nil
@@ -228,18 +190,12 @@ func (df *DotFile) Restore() error {
 		return nil
 	}
 
-	if df.MustBeCopied() {
-		if err := os.Remove(df.StoredLocation); err != nil {
-			return FailErrorFrom(err)
-		}
-	} else {
-		if err := os.Remove(df.OriginalLocation); err != nil {
-			return FailErrorFrom(err)
-		}
+	if err := os.Remove(df.OriginalLocation); err != nil {
+		return FailErrorFrom(err)
+	}
 
-		if err := os.Rename(df.StoredLocation, df.OriginalLocation); err != nil {
-			return FailErrorFrom(err)
-		}
+	if err := os.Rename(df.StoredLocation, df.OriginalLocation); err != nil {
+		return FailErrorFrom(err)
 	}
 
 	if err := fsutil.DeleteEmptyDirs(filepath.Dir(df.StoredLocation)); err != nil {
@@ -277,24 +233,6 @@ func (df *DotFile) Delete() error {
 	}
 
 	return nil
-}
-
-// IsFromThisHost returns true if dotfile is specific to current host, false
-// otherwise.
-func (df *DotFile) IsFromThisHost() bool {
-	return strings.Contains(df.StoredLocation, host.DotFileLocalSuffix())
-}
-
-// IsGeneric returns true if dotfile is not specific to any host, false
-// otherwise.
-func (df *DotFile) IsGeneric() bool {
-	return !host.PathRegexp.MatchString(df.StoredLocation)
-}
-
-// MustBeCopied returns true if dotfile can not be symlinked and must be
-// copied to appropriate place instead.
-func (df *DotFile) MustBeCopied() bool {
-	return regexp.MustCompile(`\.force-copy(\.|\z)`).MatchString(df.StoredLocation)
 }
 
 func (df *DotFile) IsAlias() bool {

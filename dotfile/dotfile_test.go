@@ -92,52 +92,6 @@ var _ = Describe("Dotfile", func() {
 			Expect(df().IsLinked()).To(BeFalse())
 		})
 
-		Context("force-copy files", func() {
-			stored := func() string {
-				s, _ := filepath.Abs("foo.force-copy")
-				return s
-			}
-
-			conflictingStored := func() string {
-				s, _ := filepath.Abs("foo")
-				return s
-			}
-
-			orig := func() string {
-				o, _ := filepath.Abs(".foo")
-				return o
-			}
-
-			df := func() *DotFile {
-				return New(stored(), orig())
-			}
-
-			It("returns true if both files exist and are the same", func() {
-				CreateFileWithContent(stored(), []byte("foo"))
-				CreateFileWithContent(orig(), []byte("foo"))
-				Expect(df().IsLinked()).To(BeTrue())
-			})
-
-			It("returns false if both files exist but are not the same", func() {
-				CreateFileWithContent(stored(), []byte("foo"))
-				CreateFileWithContent(orig(), []byte("foobar"))
-				Expect(df().IsLinked()).To(BeFalse())
-			})
-
-			It("returns false if file is symlinked, not copied", func() {
-				CreateFile(stored())
-				os.Symlink(stored(), orig())
-
-				Expect(df().IsLinked()).To(BeFalse())
-			})
-
-			It("returns false if non-force-copy file is also present", func() {
-				CreateFileWithContent(stored(), []byte("foo"))
-				CreateFileWithContent(orig(), []byte("foo"))
-				CreateFile(conflictingStored())
-				Expect(df().IsLinked()).To(BeFalse())
-			})
-		})
 	})
 
 	Describe("IsReadyToBeStored", func() {
@@ -198,30 +152,6 @@ var _ = Describe("Dotfile", func() {
 			Expect(df().IsStored()).To(BeFalse())
 		})
 
-		Context("force-copy files", func() {
-			stored := func() string {
-				s, _ := filepath.Abs("foo.force-copy")
-				return s
-			}
-
-			orig := func() string {
-				o, _ := filepath.Abs(".foo")
-				return o
-			}
-
-			df := func() *DotFile {
-				return New(stored(), orig())
-			}
-
-			It("copies file, leaves original in place", func() {
-				CreateFile(orig())
-				Expect(df().IsStored()).To(BeFalse())
-				Expect(df().Store()).To(Succeed())
-				Expect(df().IsStored()).To(BeTrue())
-				Expect(IsRegularFile(stored())).To(BeTrue())
-				Expect(IsRegularFile(orig())).To(BeTrue())
-			})
-		})
 	})
 
 	Describe("Link", func() {
@@ -263,30 +193,6 @@ var _ = Describe("Dotfile", func() {
 			Expect(df().Link()).NotTo(Succeed())
 		})
 
-		Context("force-copy files", func() {
-			stored := func() string {
-				s, _ := filepath.Abs("foo.force-copy")
-				return s
-			}
-
-			orig := func() string {
-				o, _ := filepath.Abs(".foo")
-				return o
-			}
-
-			df := func() *DotFile {
-				return New(stored(), orig())
-			}
-
-			It("copies file, does not symlink it", func() {
-				CreateFile(stored())
-				Expect(df().IsLinked()).To(BeFalse())
-				Expect(df().Link()).To(Succeed())
-				Expect(df().IsLinked()).To(BeTrue())
-				Expect(IsRegularFile(stored())).To(BeTrue())
-				Expect(IsRegularFile(orig())).To(BeTrue())
-			})
-		})
 	})
 
 	Describe("Restore", func() {
@@ -364,110 +270,6 @@ var _ = Describe("Dotfile", func() {
 
 		It("returns SkipError if files don't exist at all", func() {
 			Expect(df().Delete()).To(BeAssignableToTypeOf(SkipError("")))
-		})
-	})
-
-	Context("host-specific predicates", func() {
-		ExecuteEachWithHostName("myhost")
-
-		generic := func() *DotFile {
-			s, _ := filepath.Abs("foo")
-			o, _ := filepath.Abs(".foo")
-
-			return New(s, o)
-		}
-
-		thisHostSpecific := func() *DotFile {
-			s, _ := filepath.Abs("foo.host-myhost")
-			o, _ := filepath.Abs(".foo")
-
-			return New(s, o)
-		}
-
-		otherHostSpecific := func() *DotFile {
-			s, _ := filepath.Abs("foo.host-otherhost")
-			o, _ := filepath.Abs(".foo")
-
-			return New(s, o)
-		}
-
-		Describe("IsFromThisHost", func() {
-			It("returns true for dotfiles specific to current host", func() {
-				Expect(thisHostSpecific().IsFromThisHost()).To(BeTrue())
-			})
-
-			It("returns false for generic files", func() {
-				Expect(generic().IsFromThisHost()).To(BeFalse())
-			})
-
-			It("returns false for dotfiles specific to some other host", func() {
-				Expect(otherHostSpecific().IsFromThisHost()).To(BeFalse())
-			})
-		})
-
-		Describe("IsGeneric", func() {
-			It("returns false for dotfiles specific to current host", func() {
-				Expect(thisHostSpecific().IsGeneric()).To(BeFalse())
-			})
-
-			It("returns true for generic files", func() {
-				Expect(generic().IsGeneric()).To(BeTrue())
-			})
-
-			It("returns false for dotfiles specific to some other host", func() {
-				Expect(otherHostSpecific().IsGeneric()).To(BeFalse())
-			})
-		})
-	})
-
-	Describe("MustBeCopied", func() {
-		forceCopy := func() *DotFile {
-			s, _ := filepath.Abs("foo.force-copy")
-			o, _ := filepath.Abs(".foo")
-
-			return New(s, o)
-		}
-
-		forceCopyHostSpecificOne := func() *DotFile {
-			s, _ := filepath.Abs("foo.force-copy.host-foo")
-			o, _ := filepath.Abs(".foo")
-
-			return New(s, o)
-		}
-
-		forceCopyHostSpecificTwo := func() *DotFile {
-			s, _ := filepath.Abs("foo.host-foo.force-copy")
-			o, _ := filepath.Abs(".foo")
-
-			return New(s, o)
-		}
-
-		regular := func() *DotFile {
-			s, _ := filepath.Abs("foo")
-			o, _ := filepath.Abs(".foo")
-
-			return New(s, o)
-		}
-
-		hostSpecific := func() *DotFile {
-			s, _ := filepath.Abs("foo.host-foo")
-			o, _ := filepath.Abs(".foo")
-
-			return New(s, o)
-		}
-
-		It("returns true for force-copy files", func() {
-			Expect(forceCopy().MustBeCopied()).To(BeTrue())
-		})
-
-		It("returns true for host-specific force-copy files", func() {
-			Expect(forceCopyHostSpecificOne().MustBeCopied()).To(BeTrue())
-			Expect(forceCopyHostSpecificTwo().MustBeCopied()).To(BeTrue())
-		})
-
-		It("returns false for regulat dotfiles", func() {
-			Expect(regular().MustBeCopied()).To(BeFalse())
-			Expect(hostSpecific().MustBeCopied()).To(BeFalse())
 		})
 	})
 

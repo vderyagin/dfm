@@ -1,8 +1,6 @@
 package fsutil
 
 import (
-	"crypto/md5"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -97,46 +95,6 @@ func IsSymlink(path string) bool {
 	}
 
 	return false
-}
-
-// MD5 calculates MD5 hash of provided file.
-func MD5(path string) ([]byte, error) {
-	var result []byte
-	file, err := os.Open(path)
-
-	if err != nil {
-		return result, err
-	}
-
-	defer file.Close()
-
-	hash := md5.New()
-
-	if _, err := io.Copy(hash, file); err != nil {
-		return result, err
-	}
-
-	return hash.Sum(result), nil
-}
-
-// CopyFile copies file src to dst.
-func CopyFile(src, dst string) error {
-	s, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	// no need to check errors on read only file, we already got everything
-	// we need from the filesystem, so nothing can go wrong now.
-	defer s.Close()
-	d, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	if _, err := io.Copy(d, s); err != nil {
-		d.Close()
-		return err
-	}
-	return d.Close()
 }
 
 func SymlinksIn(dir string) <-chan string {

@@ -52,32 +52,6 @@ Dotfile storage directory includes only files that were explicitly put in there.
 
 `store` and `link` support `--force` flag, which allows them to overwrite conflicting files when necessary.
 
-### Host-specific dotfiles ###
-
-Sometimes you need some configuration file to have different options on different machines, and yet it would be convenient to have all dotfiles for all machines in one repository. DFM allows to achieve that sort of thing by using host-specific dotfiles.
-
-Host-specific dotfiles are only used on machine they are intended for and ignored everywhere else. Machines are distinguished by hostnames (run `hostname` to find out).
-
-To store given dotfiles as host-specific just use `--host-specific` flag when invoking `store` command, like this:
-
-```sh
-dfm store --host-specific .xinitrc
-```
-
-It will be stored with suffix ".host-[host name]" in your dotfile storage directory. If you also happen to have generic version of that dotfile (without host-specific suffix), it will be used on machines for which host-specific file does not exist. Other commands (`list`, `restore`, `link`, `delete`) are smart enough to deal with host-specific files automatically and in a way that makes sense.
-
-### Forcing regular files instead of symlinks ###
-
-Some application require their dotfiles to be regular files, not symlinks to regular files stored elsewhere. DFM supports this, just use `--copy` flag when invoking `store` command, like this:
-
-```sh
-dfm store --copy .xinitrc
-```
-
-It will be stored with suffix ".force-copy" in your dotfile storage directory. If that copy happens to diverge from stored version, this file will be considered in conflict by DFM. You'll be able to do run `dfm link --force <file>` to overwrite original file or `dfm store --force <file>` to overwrite stored version of it. Other commands also work with such files in a way that makes sense.
-
-And yes, these files can also be host-specific, two suffixes are just combined in this case, like "bashrc.host-localhost.force-copy".
-
 ### Linking a single file to multiple locations (aliases) ###
 
 Sometimes you want the same file to appear at multiple locations in your home directory. For example, you might want both `~/.bashrc` and `~/.bash_profile` to point to the same file.
@@ -106,5 +80,3 @@ Rules for alias symlinks:
 ## Options ##
 
 Dotfile storage directory defaults to `~/.dotfiles` and home directory is, well, home directory of current user. It is possible to override both with `--store` and `--home` global options or with `DOTFILES_STORE_DIR` and `DOTFILES_HOME_DIR` environment variables. You probably won't need to override the home directory, but it is possible to imagine situations where it would be useful, like using `dfm` on a remote filesystem through NFS.
-
-There is no flag for overriding current hostname, but you can do it by setting the `HOST` environment variable.

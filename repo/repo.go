@@ -3,14 +3,11 @@ package repo
 import (
 	"fmt"
 	"log"
-	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/vderyagin/dfm/dotfile"
 	"github.com/vderyagin/dfm/fsutil"
-	"github.com/vderyagin/dfm/host"
 )
 
 // Repo represents a place where dotfiles are stored.
@@ -49,11 +46,7 @@ func (r *Repo) StoredDotFiles() <-chan *dotfile.DotFile {
 				OriginalLocation: r.OriginalFilePath(file),
 			}
 
-			noConflict := df.IsGeneric() && !fsutil.Exists(df.StoredLocation+host.DotFileLocalSuffix())
-
-			if df.IsFromThisHost() || noConflict {
-				c <- &df
-			}
+			c <- &df
 		}
 
 		for symlink := range fsutil.SymlinksIn(r.Store) {
@@ -72,11 +65,7 @@ func (r *Repo) StoredDotFiles() <-chan *dotfile.DotFile {
 				AliasTarget:      aliasTarget,
 			}
 
-			noConflict := df.IsGeneric() && !fsutil.Exists(df.StoredLocation+host.DotFileLocalSuffix())
-
-			if df.IsFromThisHost() || noConflict {
-				c <- &df
-			}
+			c <- &df
 		}
 
 		close(c)
@@ -94,15 +83,12 @@ func (r *Repo) OriginalFilePath(stored string) string {
 		log.Fatal(err)
 	}
 
-	relPath = regexp.MustCompile(`\.force-copy`).ReplaceAllLiteralString(relPath, "")
-	relPath = host.RemoveSuffix(relPath)
-
 	return filepath.Join(r.Home, "."+relPath)
 }
 
 // StoredFilePath computes a path for stored dotfile corresponding to a given
 // original path.
-func (r *Repo) StoredFilePath(orig string, hostSpecific bool, forceCopy bool) (string, error) {
+func (r *Repo) StoredFilePath(orig string) (string, error) {
 	relPath, err := filepath.Rel(r.Home, orig)
 
 	if err != nil {
@@ -113,26 +99,7 @@ func (r *Repo) StoredFilePath(orig string, hostSpecific bool, forceCopy bool) (s
 		return "", fmt.Errorf("%s is not a dotfile", orig)
 	}
 
-	// Handle case when file is host-local and already linked.
-	if st, err := os.Readlink(orig); err == nil {
-		if !filepath.IsAbs(st) {
-			st = filepath.Join(filepath.Dir(orig), st)
-		}
-
-		if strings.HasSuffix(st, host.DotFileLocalSuffix()) {
-			return st, nil
-		}
-	}
-
 	storedRelPath := strings.TrimPrefix(relPath, ".")
-
-	if hostSpecific {
-		storedRelPath += host.DotFileLocalSuffix()
-	}
-
-	if forceCopy {
-		storedRelPath += ".force-copy"
-	}
 
 	return filepath.Join(r.Store, storedRelPath), nil
 }
